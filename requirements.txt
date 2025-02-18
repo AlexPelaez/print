@@ -1,3 +1,6 @@
 selenium
 watchdog
 pillow
+cv2
+requests
+python-dotenv
