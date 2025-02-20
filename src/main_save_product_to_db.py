@@ -19,7 +19,7 @@ def main():
 	db_util = DatabaseUtil(
 		host="localhost",
 		user="root",
-		password="",        # or your password
+		password="",  
 		database="print_core_db"
 	)
 
@@ -36,12 +36,15 @@ def main():
 	# 2) Store it in DB
 	db_util.insert_or_update_product(product_model)
 
+	db_util.set_status_by_product_id(product_model.id, "DRAFT")
+
+	# 3) Fetch if we want
 	try:
-		product_model_new = db_util.fetch_product_as_model(product_id)
+		product_model_new = db_util.fetch_product_from_product_id(product_id)
 		print("Fetched product:", product_model_new.title, product_model_new.id)
 		print("Number of variants:", len(product_model_new.variants))
-		new_id = service.duplicate_product_from_model(product_model_new)
-		print("New ID: ", new_id)
+		# new_id = service.duplicate_product_from_model(product_model_new)
+		# print("New ID: ", new_id)
 		# ... further logic ...
 	except ValueError as e:
 		print(e)

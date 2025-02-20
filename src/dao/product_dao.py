@@ -1,8 +1,7 @@
-# file: database_util.py
+# file: dao/product_dao.py
 
-import mysql.connector
-from mysql.connector import Error
 import json
+from config.db_connection import DBConnection
 
 # Import the model definitions
 from printify_product_models import (
@@ -15,41 +14,38 @@ from printify_product_models import (
     PrintifyExternalModel,
     PrintifySalesChannelPropertyModel,
     PrintifyViewModel
-    # etc. if you want all of them
 )
 
-class DatabaseUtil:
-    def __init__(self, host="localhost", user="root", password="", database="my_database"):
-        self.host = host
-        self.user = user
-        self.password = password
-        self.database = database
-        self.connection = None
-        self.cursor = None
-
-        self.connect()
-
-    def connect(self):
-        try:
-            self.connection = mysql.connector.connect(
-                host=self.host,
-                user=self.user,
-                password=self.password,
-                database=self.database
-            )
-            self.cursor = self.connection.cursor(dictionary=True)
-            print("Connected to the database successfully!")
-        except Error as e:
-            print(f"Error connecting to MySQL: {e}")
+class ProductDAO:
+    def __init__(self, db_conn: DBConnection):
+        self.db = db_conn
 
     # ---------------------------------------------------------
-    # TABLE CREATION (optional if you have them already)
+    # TABLE CREATION
     # ---------------------------------------------------------
+    def create_status_table(self):
+        """
+        Creates the 'product_status' table that references products.id
+        and holds a status (DRAFT, PUBLISHED).
+        """
+        status_sql = """
+        CREATE TABLE IF NOT EXISTS product_status (
+            product_fk INT PRIMARY KEY,
+            status ENUM('DRAFT','PUBLISHED') NOT NULL,
+            FOREIGN KEY (product_fk) REFERENCES products(id)
+              ON DELETE CASCADE
+        );
+        """
+        self.db.cursor.execute(status_sql)
+        self.db.connection.commit()
+        print("Created 'product_status' table if not present.")
+
     def create_tables(self):
         """
-        Example of how you'd create the main product table + sub-tables.
-        Adjust as needed.
+        Creates the main 'products' table + all product sub-tables.
+        Mirrors your example structure exactly.
         """
+        # Main products table
         main_product_sql = """
         CREATE TABLE IF NOT EXISTS products (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -68,9 +64,9 @@ class DatabaseUtil:
             UNIQUE KEY unique_product_id (product_id)
         );
         """
-        self.cursor.execute(main_product_sql)
+        self.db.cursor.execute(main_product_sql)
 
-        # Example sub-table: tags
+        # Sub-tables
         tags_sql = """
         CREATE TABLE IF NOT EXISTS product_tags (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -80,9 +76,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(tags_sql)
+        self.db.cursor.execute(tags_sql)
 
-        # Example sub-table: variants
         variants_sql = """
         CREATE TABLE IF NOT EXISTS product_variants (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -103,9 +98,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(variants_sql)
+        self.db.cursor.execute(variants_sql)
 
-        # Example sub-table: images
         images_sql = """
         CREATE TABLE IF NOT EXISTS product_images (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -120,9 +114,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(images_sql)
+        self.db.cursor.execute(images_sql)
 
-        # Example sub-table: print_areas
         print_areas_sql = """
         CREATE TABLE IF NOT EXISTS product_print_areas (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -133,9 +126,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(print_areas_sql)
+        self.db.cursor.execute(print_areas_sql)
 
-        # Example sub-table: placeholders in each print_area
         placeholders_sql = """
         CREATE TABLE IF NOT EXISTS product_placeholders (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -146,9 +138,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(placeholders_sql)
+        self.db.cursor.execute(placeholders_sql)
 
-        # Example: external
         external_sql = """
         CREATE TABLE IF NOT EXISTS product_external (
             product_id VARCHAR(100) PRIMARY KEY,
@@ -158,9 +149,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(external_sql)
+        self.db.cursor.execute(external_sql)
 
-        # Example: sales_channel_properties
         scp_sql = """
         CREATE TABLE IF NOT EXISTS product_sales_channel_properties (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -170,9 +160,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(scp_sql)
+        self.db.cursor.execute(scp_sql)
 
-        # Example: views
         views_sql = """
         CREATE TABLE IF NOT EXISTS product_views (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -184,9 +173,8 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(views_sql)
+        self.db.cursor.execute(views_sql)
 
-        # Example: view_files
         view_files_sql = """
         CREATE TABLE IF NOT EXISTS product_view_files (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -197,19 +185,17 @@ class DatabaseUtil:
               ON DELETE CASCADE
         );
         """
-        self.cursor.execute(view_files_sql)
+        self.db.cursor.execute(view_files_sql)
 
-        self.connection.commit()
-        print("Created all tables if not present.")
+        self.db.connection.commit()
+        print("Created all 'products' tables if not present.")
 
     # ---------------------------------------------------------
     # INSERT / UPDATE
     # ---------------------------------------------------------
-
     def _delete_sub_models(self, product_id: str):
         """
-        Delete sub-rows referencing product_id.
-        This ensures we can re-insert fresh data each time.
+        Delete sub-rows referencing product_id from all sub-tables.
         """
         tables_to_clear = [
             "product_tags",
@@ -219,25 +205,21 @@ class DatabaseUtil:
             "product_external",
             "product_sales_channel_properties",
             "product_views"
-            # placeholders will be deleted via CASCADE from product_print_areas
-            # view_files will be deleted via CASCADE from product_views
         ]
         for tbl in tables_to_clear:
             sql = f"DELETE FROM {tbl} WHERE product_id = %s"
-            self.cursor.execute(sql, (product_id,))
-        self.connection.commit()
+            self.db.cursor.execute(sql, (product_id,))
+        self.db.connection.commit()
 
     def insert_or_update_product(self, product_model: PrintifyProductModel):
         """
-        Insert or update a product using a PrintifyProductModel object
-        (instead of a dict). Then insert sub-model rows:
-            tags, variants, images, print_areas, placeholders, external, etc.
+        Insert or update a product from a PrintifyProductModel,
+        then re-insert all sub-model data.
         """
-
         def bool_to_int(b):
             return 1 if b else 0
 
-        # 1) Upsert the main product row
+        # 1) Upsert main product row
         upsert_query = """
         INSERT INTO products (
             product_id, title, description, 
@@ -261,7 +243,6 @@ class DatabaseUtil:
             updated_at = VALUES(updated_at)
         ;
         """
-
         upsert_values = (
             product_model.id,
             product_model.title,
@@ -278,20 +259,20 @@ class DatabaseUtil:
         )
 
         try:
-            self.cursor.execute(upsert_query, upsert_values)
-            self.connection.commit()
-            print(f"Upserted main product row for ID = {product_model.id}")
+            self.db.cursor.execute(upsert_query, upsert_values)
+            self.db.connection.commit()
+            print(f"Upserted product row for product_id={product_model.id}")
         except Exception as e:
             print(f"Error upserting product {product_model.id}: {e}")
             return
 
-        # 2) Clear sub-rows for this product
+        # 2) Remove old sub-model rows
         self._delete_sub_models(product_model.id)
 
         # 3) Insert tags
         insert_tag_sql = "INSERT INTO product_tags (product_id, tag) VALUES (%s, %s)"
         for tmodel in product_model.tags:
-            self.cursor.execute(insert_tag_sql, (product_model.id, tmodel.tag))
+            self.db.cursor.execute(insert_tag_sql, (product_model.id, tmodel.tag))
 
         # 4) Insert variants
         insert_variant_sql = """
@@ -319,7 +300,7 @@ class DatabaseUtil:
             quantity = vdata.get("quantity", 1)
             options_json = json.dumps(vdata.get("options", []))
 
-            self.cursor.execute(insert_variant_sql, (
+            self.db.cursor.execute(insert_variant_sql, (
                 product_model.id,
                 variant_id, sku, cost, price, title,
                 grams, is_enabled, is_default, is_available,
@@ -345,9 +326,8 @@ class DatabaseUtil:
             is_pub = bool_to_int(idata.get("is_selected_for_publishing", False))
             order_i = idata.get("order", None)
 
-            self.cursor.execute(insert_img_sql, (
-                product_model.id,
-                src, variant_ids,
+            self.db.cursor.execute(insert_img_sql, (
+                product_model.id, src, variant_ids,
                 position, is_def, is_pub, order_i
             ))
 
@@ -365,17 +345,16 @@ class DatabaseUtil:
             if not isinstance(pa_data, dict):
                 continue
 
-            variant_ids = json.dumps(pa_data.get("variant_ids", []))
+            variant_ids_json = json.dumps(pa_data.get("variant_ids", []))
             background = pa_data.get("background")
 
-            self.cursor.execute(insert_pa_sql, (product_model.id, variant_ids, background))
-            pa_db_id = self.cursor.lastrowid
+            self.db.cursor.execute(insert_pa_sql, (product_model.id, variant_ids_json, background))
+            pa_db_id = self.db.cursor.lastrowid
 
-            # placeholders
             for ph in pa_data.get("placeholders", []):
                 images_json = json.dumps(ph.get("images", []))
                 position_val = ph.get("position")
-                self.cursor.execute(insert_ph_sql, (pa_db_id, position_val, images_json))
+                self.db.cursor.execute(insert_ph_sql, (pa_db_id, position_val, images_json))
 
         # 7) Insert external
         if product_model.external and isinstance(product_model.external.data, dict):
@@ -387,7 +366,7 @@ class DatabaseUtil:
                 external_id = VALUES(external_id),
                 handle = VALUES(handle)
             """
-            self.cursor.execute(insert_ext_sql, (
+            self.db.cursor.execute(insert_ext_sql, (
                 product_model.id,
                 ext_data.get("id"),
                 ext_data.get("handle")
@@ -398,9 +377,9 @@ class DatabaseUtil:
         INSERT INTO product_sales_channel_properties (product_id, data)
         VALUES (%s, %s)
         """
-        for scp in product_model.sales_channel_properties:
-            scp_data = scp.data if isinstance(scp.data, dict) else {}
-            self.cursor.execute(insert_scp_sql, (product_model.id, json.dumps(scp_data)))
+        for scp_model in product_model.sales_channel_properties:
+            scp_data = scp_model.data if isinstance(scp_model.data, dict) else {}
+            self.db.cursor.execute(insert_scp_sql, (product_model.id, json.dumps(scp_data)))
 
         # 9) Insert views
         insert_view_sql = """
@@ -420,30 +399,27 @@ class DatabaseUtil:
             label = vdata.get("label")
             position = vdata.get("position")
 
-            self.cursor.execute(insert_view_sql, (product_model.id, view_id, label, position))
-            db_view_id = self.cursor.lastrowid
+            self.db.cursor.execute(insert_view_sql, (product_model.id, view_id, label, position))
+            db_view_id = self.db.cursor.lastrowid
 
-            # files array
             for vf in vdata.get("files", []):
                 variant_ids_json = json.dumps(vf.get("variant_ids", []))
                 src = vf.get("src")
-                self.cursor.execute(insert_view_file_sql, (db_view_id, src, variant_ids_json))
+                self.db.cursor.execute(insert_view_file_sql, (db_view_id, src, variant_ids_json))
 
-        self.connection.commit()
+        self.db.connection.commit()
         print(f"Upserted product {product_model.id} + sub-models from model.")
 
     # ---------------------------------------------------------
     # FETCH
     # ---------------------------------------------------------
-
-    def fetch_product_as_model(self, product_id: str) -> PrintifyProductModel | None:
+    def fetch_product_from_product_id(self, product_id: str) -> PrintifyProductModel | None:
         """
-        Example method that loads from DB and builds a PrintifyProductModel.
+        Loads from DB, reconstructs a PrintifyProductModel.
         """
-        # 1) Fetch main row
         main_q = "SELECT * FROM products WHERE product_id = %s"
-        self.cursor.execute(main_q, (product_id,))
-        row = self.cursor.fetchone()
+        self.db.cursor.execute(main_q, (product_id,))
+        row = self.db.cursor.fetchone()
         if not row:
             return None
 
@@ -462,14 +438,14 @@ class DatabaseUtil:
             print_provider_id=row["print_provider_id"]
         )
 
-        # 2) tags
-        self.cursor.execute("SELECT tag FROM product_tags WHERE product_id = %s", (product_id,))
-        for trow in self.cursor.fetchall():
+        # tags
+        self.db.cursor.execute("SELECT tag FROM product_tags WHERE product_id = %s", (product_id,))
+        for trow in self.db.cursor.fetchall():
             pm.tags.append(PrintifyTagModel(product_id, trow["tag"]))
 
-        # 3) variants
-        self.cursor.execute("SELECT * FROM product_variants WHERE product_id = %s", (product_id,))
-        for vrow in self.cursor.fetchall():
+        # variants
+        self.db.cursor.execute("SELECT * FROM product_variants WHERE product_id = %s", (product_id,))
+        for vrow in self.db.cursor.fetchall():
             data_dict = {
                 "id": vrow["variant_id"],
                 "sku": vrow["sku"],
@@ -486,9 +462,9 @@ class DatabaseUtil:
             }
             pm.variants.append(PrintifyVariantModel(product_id, data_dict))
 
-        # 4) images
-        self.cursor.execute("SELECT * FROM product_images WHERE product_id = %s", (product_id,))
-        for irow in self.cursor.fetchall():
+        # images
+        self.db.cursor.execute("SELECT * FROM product_images WHERE product_id = %s", (product_id,))
+        for irow in self.db.cursor.fetchall():
             data_dict = {
                 "src": irow["src"],
                 "variant_ids": json.loads(irow["variant_ids"]) if irow["variant_ids"] else [],
@@ -499,13 +475,13 @@ class DatabaseUtil:
             }
             pm.images.append(PrintifyImageModel(product_id, data_dict))
 
-        # 5) print_areas + placeholders
-        self.cursor.execute("SELECT * FROM product_print_areas WHERE product_id = %s", (product_id,))
-        pa_rows = self.cursor.fetchall()
+        # print_areas + placeholders
+        self.db.cursor.execute("SELECT * FROM product_print_areas WHERE product_id = %s", (product_id,))
+        pa_rows = self.db.cursor.fetchall()
         for par in pa_rows:
             pa_id = par["id"]
-            self.cursor.execute("SELECT * FROM product_placeholders WHERE print_area_id = %s", (pa_id,))
-            ph_rows = self.cursor.fetchall()
+            self.db.cursor.execute("SELECT * FROM product_placeholders WHERE print_area_id = %s", (pa_id,))
+            ph_rows = self.db.cursor.fetchall()
             placeholders_list = []
             for ph in ph_rows:
                 placeholders_list.append({
@@ -519,31 +495,30 @@ class DatabaseUtil:
             }
             pm.print_areas.append(PrintifyPrintAreaModel(product_id, pa_data))
 
-        # 6) external
-        self.cursor.execute("SELECT * FROM product_external WHERE product_id = %s", (product_id,))
-        er = self.cursor.fetchone()
+        # external
+        self.db.cursor.execute("SELECT * FROM product_external WHERE product_id = %s", (product_id,))
+        er = self.db.cursor.fetchone()
         if er:
             pm.external = PrintifyExternalModel(product_id, {
                 "id": er["external_id"],
                 "handle": er["handle"]
             })
 
-        # 7) sales_channel_properties
-        self.cursor.execute("SELECT data FROM product_sales_channel_properties WHERE product_id = %s", (product_id,))
-        for scp_row in self.cursor.fetchall():
+        # sales_channel_properties
+        self.db.cursor.execute("SELECT data FROM product_sales_channel_properties WHERE product_id = %s", (product_id,))
+        for scp_row in self.db.cursor.fetchall():
             scp_data = json.loads(scp_row["data"]) if scp_row["data"] else {}
             pm.sales_channel_properties.append(PrintifySalesChannelPropertyModel(product_id, scp_data))
 
-        # 8) views
-        self.cursor.execute("SELECT * FROM product_views WHERE product_id = %s", (product_id,))
-        view_rows = self.cursor.fetchall()
+        # views
+        self.db.cursor.execute("SELECT * FROM product_views WHERE product_id = %s", (product_id,))
+        view_rows = self.db.cursor.fetchall()
         for vr in view_rows:
             view_id = vr["view_id"]
             label = vr["label"]
             position = vr["position"]
-            # fetch files
-            self.cursor.execute("SELECT * FROM product_view_files WHERE view_id = %s", (vr["id"],))
-            vf_rows = self.cursor.fetchall()
+            self.db.cursor.execute("SELECT * FROM product_view_files WHERE view_id = %s", (vr["id"],))
+            vf_rows = self.db.cursor.fetchall()
             files_list = []
             for vfr in vf_rows:
                 files_list.append({
@@ -560,9 +535,60 @@ class DatabaseUtil:
 
         return pm
 
+    def set_status_by_product_id(self, product_id: str, new_status: str):
+        if new_status not in ("DRAFT", "PUBLISHED"):
+            raise ValueError(f"Invalid status '{new_status}'.")
+
+        select_q = "SELECT id FROM products WHERE product_id = %s"
+        self.db.cursor.execute(select_q, (product_id,))
+        row = self.db.cursor.fetchone()
+        if not row:
+            print(f"No product found with product_id={product_id}")
+            return
+
+        local_id = row["id"]
+
+        upsert_sql = """
+        INSERT INTO product_status (product_fk, status)
+        VALUES (%s, %s)
+        ON DUPLICATE KEY UPDATE status = VALUES(status);
+        """
+        self.db.cursor.execute(upsert_sql, (local_id, new_status))
+        self.db.connection.commit()
+        print(f"Set status for product_id={product_id} (id={local_id}) to '{new_status}'.")
+
+    def set_status_by_id(self, db_id: int, new_status: str):
+        if new_status not in ("DRAFT", "PUBLISHED"):
+            raise ValueError(f"Invalid status '{new_status}'.")
+
+        check_q = "SELECT id FROM products WHERE id = %s"
+        self.db.cursor.execute(check_q, (db_id,))
+        row = self.db.cursor.fetchone()
+        if not row:
+            print(f"No product found with id={db_id}")
+            return
+
+        upsert_sql = """
+        INSERT INTO product_status (product_fk, status)
+        VALUES (%s, %s)
+        ON DUPLICATE KEY UPDATE status = VALUES(status)
+        """
+        self.db.cursor.execute(upsert_sql, (db_id, new_status))
+        self.db.connection.commit()
+        print(f"Set status for local id={db_id} to '{new_status}'.")
+
+    def fetch_max_draft_product_id(self) -> int | None:
+        query = """
+            SELECT MAX(p.product_id) AS max_id
+            FROM products p
+            JOIN product_status ps ON p.id = ps.product_fk
+            WHERE ps.status = 'DRAFT';
+        """
+        self.db.cursor.execute(query)
+        row = self.db.cursor.fetchone()
+        if row and row["max_id"]:
+            return row["max_id"]
+        return None
+
     def close(self):
-        if self.cursor:
-            self.cursor.close()
-        if self.connection:
-            self.connection.close()
-        print("Database connection closed.")
+        self.db.close()
