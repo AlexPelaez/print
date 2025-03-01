@@ -3,11 +3,8 @@
 import json
 from config.db_connection import DBConnection
 
-# If you have a separate model definitions for "templates", e.g. PrintifyTemplateModel, 
-# replicate them. If they are the same structure as PrintifyProductModel, you can reuse or 
-# create a new class. Here, we assume you have PrintifyProductModel or a similar structure:
-from printify_product_models import (
-    PrintifyProductModel,  # or PrintifyTemplateModel if you prefer
+from models.printify_template_models import (
+    PrintifyTemplateModel,  
     PrintifyVariantModel,
     PrintifyOptionModel,
     PrintifyPrintAreaModel,
@@ -211,7 +208,7 @@ class TemplateDAO:
             self.db.cursor.execute(sql, (template_id,))
         self.db.connection.commit()
 
-    def insert_or_update_template(self, template_model: PrintifyProductModel):
+    def insert_or_update_template(self, template_model):
         """
         Insert or update a template using a Printify-style Model.
         We'll treat 'id' as 'template_id' for naming consistency.
@@ -415,9 +412,9 @@ class TemplateDAO:
     # ---------------------------------------------------------
     # FETCH
     # ---------------------------------------------------------
-    def fetch_template_from_template_id(self, template_id: str) -> PrintifyProductModel | None:
+    def fetch_template_from_template_id(self, template_id: str) -> PrintifyTemplateModel | None:
         """
-        Loads from DB, reconstructs a PrintifyProductModel (or 'template' model).
+        Loads from DB, reconstructs a PrintifyTemplateModel (or 'template' model).
         """
         main_q = "SELECT * FROM templates WHERE template_id = %s"
         self.db.cursor.execute(main_q, (template_id,))
@@ -425,7 +422,7 @@ class TemplateDAO:
         if not row:
             return None
 
-        pm = PrintifyProductModel(  # or a separate PrintifyTemplateModel
+        pm = PrintifyTemplateModel(  # or a separate PrintifyTemplateModel
             id=row["template_id"],
             title=row["title"],
             description=row["description"],

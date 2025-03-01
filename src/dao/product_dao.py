@@ -4,7 +4,7 @@ import json
 from config.db_connection import DBConnection
 
 # Import the model definitions
-from printify_product_models import (
+from models.printify_product_models import (
     PrintifyProductModel,
     PrintifyVariantModel,
     PrintifyOptionModel,
