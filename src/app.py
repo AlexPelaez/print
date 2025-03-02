@@ -1,4 +1,4 @@
-from printify_service import PrintifyService
+from service.printify_service import PrintifyService
 # from video_util import VideoUtil
 # from open_ai_service import OpenAiService
 import uuid

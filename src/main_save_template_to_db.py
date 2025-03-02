@@ -3,23 +3,17 @@ from config.db_connection import DBConnection
 from models.printify_template_models import PrintifyTemplateModel
 from dao.template_dao import TemplateDAO
 
-import uuid
-import os
-import random
-from multiprocessing import Pool as ProcessPool
-
-
-product_id = '67a325e52405f94e2707d5c8'  # Replace with the product ID to duplicate
-shop_id = "20434486"
+product_id = '67a1c8af8a72c38bef02bb46'  # Replace with the product ID to duplicate
+shop_id = "20510104"
 
 def main():
-	service = PrintifyService(name="PrintifyService", shop_id=shop_id)
+	printify_service = PrintifyService(name="PrintifyService", shop_id=shop_id)
 	db_conn = DBConnection(host="localhost", user="root", password="", database="print_core_db")
 	db_conn.connect()
 
 	template_dao = TemplateDAO(db_conn)
 
-	template_data = service.get_product_details(product_id)
+	template_data = printify_service.get_product_details(product_id)
 	print(template_data)
 
 	if not template_data:
@@ -39,7 +33,7 @@ def main():
 		template_model_new = template_dao.fetch_template_from_template_id(product_id)
 		print("Fetched template:", template_model_new.title, template_model_new.id)
 		print("Number of variants:", len(template_model_new.variants))
-		# new_id = service.duplicate_product_from_model(product_model_new)
+		# new_id = printify_service.duplicate_product_from_model(product_model_new)
 		# print("New ID: ", new_id)
 		# ... further logic ...
 	except ValueError as e:
