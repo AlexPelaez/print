@@ -315,10 +315,6 @@ class PrintifyTemplateModel:
 	
 	@staticmethod
 	def from_dict(data: Dict[str, Any]) -> "PrintifyTemplateModel":
-		"""
-		Parse raw Printify template JSON into a PrintifyTemplateModel object
-		with sub-model instances for arrays like variants, images, etc.
-		"""
 		pid = data["id"]
 		title = data.get("title")
 		description = data.get("description")
@@ -371,9 +367,13 @@ class PrintifyTemplateModel:
 		if "external" in data and isinstance(data["external"], dict):
 			model.external = PrintifyExternalModel(pid, data["external"])
 
-		# sales_channel_properties
-		for scp in data.get("sales_channel_properties", []):
-			model.sales_channel_properties.append(PrintifySalesChannelPropertyModel(pid, scp))
+		# Sales channel properties
+		scp_data = data.get("sales_channel_properties", {})
+		if isinstance(scp_data, dict):
+			model.sales_channel_properties.append(PrintifySalesChannelPropertyModel(pid, scp_data))
+		elif isinstance(scp_data, list):
+			for scp in scp_data:
+				model.sales_channel_properties.append(PrintifySalesChannelPropertyModel(pid, scp))
 
 		# Views
 		for v in data.get("views", []):

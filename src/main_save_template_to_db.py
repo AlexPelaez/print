@@ -20,10 +20,13 @@ def main():
 		print("No product data found.")
 		return
 
+
 	# 1) Convert raw JSON to our model
 	template_model = PrintifyTemplateModel.from_dict(template_data)
+	print("hey hey hey here")
+	# print(template_model.print_string_verbose())
 
-	# 2) Store it in DB
+	# # 2) Store it in DB
 	template_dao.insert_or_update_template(template_model)
 
 	template_dao.set_status_by_template_id(template_model.id, "DRAFT")
@@ -31,8 +34,10 @@ def main():
 	# 3) Fetch if we want
 	try:
 		template_model_new = template_dao.fetch_template_from_template_id(product_id)
-		print("Fetched template:", template_model_new.title, template_model_new.id)
-		print("Number of variants:", len(template_model_new.variants))
+		print("we here")
+		print(template_model_new.print_string_verbose())
+		# print("Fetched template:", template_model_new.title, template_model_new.id)
+		# print("Number of variants:", len(template_model_new.variants))
 		# new_id = printify_service.duplicate_product_from_model(product_model_new)
 		# print("New ID: ", new_id)
 		# ... further logic ...

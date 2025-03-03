@@ -1,11 +1,13 @@
 from services.printify_service import PrintifyService
 from services.open_ai_service import OpenAiService
+from clients.open_ai_client import OpenAIClient
 from services.product_generator_service import ProductGeneratorService
 from config.db_connection import DBConnection
 from models.printify_template_models import PrintifyTemplateModel
 from dao.template_dao import TemplateDAO
 from dao.product_dao import ProductDAO
 from mappers.template_product_mapper import TemplateProductMapper
+from util.text_generator_util import TextGenerator
 
 
 
@@ -13,6 +15,9 @@ product_id = '67a1c8af8a72c38bef02bb46'  # Replace with the product ID to duplic
 shop_id = "20510104"
 
 def main():
+	openai_client = OpenAIClient()
+
+	text_generator = TextGenerator(openai_client)
 	product_generator_service = ProductGeneratorService(name="ProductGeneratorService")
 	printify_service = PrintifyService(name="PrintifyService", shop_id=shop_id)
 
@@ -22,15 +27,24 @@ def main():
 	product_dao = ProductDAO(db_conn)
 
 
+	# Fetch template from the database
 	template = template_dao.fetch_template_from_template_id(product_id)
 
-	# new_product_id = printify_service.duplicate_product_for_id(product_id)
-	# print("here", new_product_id)
 
-
+	# Map template to new product
 	new_product = TemplateProductMapper.map_template_to_product(template)
-	new_product = TemplateProductMapper.replace_product_title(new_product, "test title")
-	new_product = TemplateProductMapper.replace_product_description(new_product, "test description")
+
+
+	new_description = text_generator.generate_product_description("trippy mandlebrot set inspired design with crazy trippy patterns", "Amazon", "iphone 16 case")
+	new_title = text_generator.generate_product_title(new_description, "Amazon", "iphone 16 case")
+
+	print("New Title: ", new_title)
+	print("new Description: ", new_description)
+
+
+	# Replace with custom product data
+	new_product = TemplateProductMapper.replace_product_title(new_product, new_title)
+	new_product = TemplateProductMapper.replace_product_description(new_product, new_description)
 	new_product = TemplateProductMapper.replace_all_sku(new_product)
 	# new_product = TemplateProductMapper.replace_product_id(new_product, new_product_id)
 
