@@ -38,7 +38,7 @@ class TextGenerator:
             f"Each bullet point should be under 300 characters and highlight a different aspect of the product while utilizing SEO keywords."
             f"Format your response as a JSON array with exactly 5 strings, each string being a bullet point."
         )
-        json_response = self.client.generate_text(system_message, prompt, max_tokens=350, temperature=0.7, frequency_penalty=0.4)
+        json_response = self.client.generate_text(system_message, prompt, max_tokens=350, temperature=0.7)
         
         try:
             # Parse the JSON response

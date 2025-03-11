@@ -139,6 +139,14 @@ class TemplateProductMapper:
 		"""
 		product.id = id
 		return product
+	
+	@staticmethod
+	def replace_product_id(product: PrintifyProductModel) -> PrintifyProductModel:
+		"""
+		Update the product's od.
+		"""
+		product.internal_id = str(uuid.uuid4())
+		return product
 
 	@staticmethod
 	def replace_all_sku(product: PrintifyProductModel) -> PrintifyProductModel:

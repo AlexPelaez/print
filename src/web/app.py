@@ -355,6 +355,125 @@ def api_templates():
         db_conn.close()
 
 
+@app.route('/template/<template_id>/edit', methods=['GET'])
+def edit_template(template_id):
+    """Display form for editing a template"""
+    # Connect to the database
+    db_conn = DBConnection(host="localhost", user="root", password="", database="print_core_db")
+    db_conn.connect()
+    
+    try:
+        # Initialize the DAO
+        template_dao = TemplateDAO(db_conn)
+        
+        # Get the template
+        try:
+            template = template_dao.fetch_template_from_template_id(template_id)
+            
+            # Format the template data for the form
+            template_data = {
+                "id": template.id,
+                "title": template.title or "",
+                "description": template.description or "",
+                "blueprint_id": template.blueprint_id,
+                "print_provider_id": template.print_provider_id,
+                "user_id": template.user_id,
+                "shop_id": template.shop_id,
+                "visible": template.visible,
+                "is_locked": template.is_locked,
+                "reviewed": template.reviewed,
+                "tags": [tag.tag for tag in template.tags if tag and tag.tag],
+                "variants": [var.data for var in template.variants],
+                "print_areas": [pa.data for pa in template.print_areas],
+                "options": [opt.data for opt in template.options],
+                "images": [img.data for img in template.images],
+                "external": template.external.data if template.external else None,
+                "sales_channel_properties": [scp.data for scp in template.sales_channel_properties],
+                "files": [f.data for f in template.files],
+                "additional_options": [ao.data for ao in template.additional_options],
+                "selling_prices": [sp.data for sp in template.selling_prices],
+                "views": [view.data for view in template.views],
+                "created_at": template.created_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(template.created_at, 'strftime') else str(template.created_at),
+                "updated_at": template.updated_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(template.updated_at, 'strftime') else str(template.updated_at)
+            }
+            
+            # Include current year for copyright in footer
+            now = datetime.now()
+            
+            # Get shop IDs for dropdown
+            shop_ids = SHOP_IDS
+            
+            return render_template(
+                'edit_template.html',
+                template=template_data,
+                shop_ids=shop_ids,
+                now=now
+            )
+        
+        except ValueError as e:
+            flash(f"Error: {str(e)}", "error")
+            return redirect(url_for('templates'))
+    
+    finally:
+        # Close the database connection
+        db_conn.close()
+
+@app.route('/template/<template_id>/edit', methods=['POST'])
+def update_template(template_id):
+    """Handle template update form submission"""
+    # Connect to the database
+    db_conn = DBConnection(host="localhost", user="root", password="", database="print_core_db")
+    db_conn.connect()
+    
+    try:
+        # Initialize the DAO
+        template_dao = TemplateDAO(db_conn)
+        
+        # Get form data
+        title = request.form.get('title')
+        description = request.form.get('description')
+        blueprint_id = request.form.get('blueprint_id')
+        print_provider_id = request.form.get('print_provider_id')
+        user_id = request.form.get('user_id')
+        shop_id = request.form.get('shop_id')
+        visible = request.form.get('visible') == 'true'
+        is_locked = request.form.get('is_locked') == 'true'
+        reviewed = request.form.get('reviewed') == 'true'
+        tags = request.form.getlist('tags[]')
+        
+        # Update the template
+        try:
+            template = template_dao.fetch_template_from_template_id(template_id)
+            
+            # Update basic fields
+            template.title = title
+            template.description = description
+            template.blueprint_id = int(blueprint_id) if blueprint_id else None
+            template.print_provider_id = int(print_provider_id) if print_provider_id else None
+            template.user_id = int(user_id) if user_id else None
+            template.shop_id = int(shop_id) if shop_id else None
+            template.visible = visible
+            template.is_locked = is_locked
+            template.reviewed = reviewed
+            
+            # Update tags
+            template.tags = [PrintifyTagModel(template_id, tag) for tag in tags if tag]
+            
+            # Save the template
+            template_dao.update_template(template)
+            
+            flash("Template updated successfully!", "success")
+            return redirect(url_for('template_detail', template_id=template_id))
+            
+        except ValueError as e:
+            flash(f"Error updating template: {str(e)}", "error")
+            return redirect(url_for('edit_template', template_id=template_id))
+            
+    finally:
+        # Close the database connection
+        db_conn.close()
+
+
 if __name__ == '__main__':
     # Ensure the templates directory exists
     os.makedirs(os.path.join(os.path.dirname(__file__), 'templates'), exist_ok=True)

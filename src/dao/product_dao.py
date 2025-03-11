@@ -285,7 +285,7 @@ class ProductDAO:
 
         # 4) Insert tags
         insert_tag_sql = """
-        INSERT INTO product_tags (id, product_id, tag)
+        REPLACE INTO product_tags (id, product_id, tag)
         VALUES (%s, %s, %s)
         """
         for tmodel in product_model.tags:
@@ -294,7 +294,7 @@ class ProductDAO:
 
         # 5) Insert variants
         insert_variant_sql = """
-        INSERT INTO product_variants (
+        REPLACE INTO product_variants (
             id, product_id, variant_id, sku, cost, price, title,
             grams, is_enabled, is_default, is_available,
             is_printify_express_eligible, quantity, options
@@ -326,7 +326,7 @@ class ProductDAO:
 
         # 6) Insert images
         insert_img_sql = """
-        INSERT INTO product_images (
+        REPLACE INTO product_images (
             id, product_id, src, variant_ids, position,
             is_default, is_selected_for_publishing, order_index
         )
@@ -351,12 +351,12 @@ class ProductDAO:
 
         # 7) Insert print areas and placeholders
         insert_pa_sql = """
-        INSERT INTO product_print_areas (
+        REPLACE INTO product_print_areas (
             id, product_id, variant_ids, background
         ) VALUES (%s, %s, %s, %s)
         """
         insert_ph_sql = """
-        INSERT INTO product_placeholders (
+        REPLACE INTO product_placeholders (
             id, print_area_id, position, images
         ) VALUES (%s, %s, %s, %s)
         """
@@ -407,7 +407,7 @@ class ProductDAO:
 
         # 9) Insert sales channel properties
         insert_scp_sql = """
-        INSERT INTO product_sales_channel_properties (id, product_id, data)
+        REPLACE INTO product_sales_channel_properties (id, product_id, data)
         VALUES (%s, %s, %s)
         """
         for scp_model in product_model.sales_channel_properties:
@@ -424,11 +424,11 @@ class ProductDAO:
 
         # 10) Insert views and view files
         insert_view_sql = """
-        INSERT INTO product_views (id, product_id, view_id, label, position)
+        REPLACE INTO product_views (id, product_id, view_id, label, position)
         VALUES (%s, %s, %s, %s, %s)
         """
         insert_view_file_sql = """
-        INSERT INTO product_view_files (
+        REPLACE INTO product_view_files (
             id, view_id, src, variant_ids
         ) VALUES (%s, %s, %s, %s)
         """
@@ -651,6 +651,119 @@ class ProductDAO:
         if row and row["max_id"]:
             return row["max_id"]
         return None
+
+    def fetch_all_products(self):
+        """
+        Fetch all products from the database with their Printify IDs.
+        
+        Returns:
+            list: A list of dictionaries containing product information with 'id' and 'printify_id' fields
+        """
+        query = """
+        SELECT p.id, p.product_id as printify_id
+        FROM products p
+        """
+        self.db.cursor.execute(query)
+        return self.db.cursor.fetchall()
+
+    def delete_product(self, product_id: str) -> bool:
+        """
+        Delete a product from the database by its internal ID.
+        This will cascade delete all related records from:
+        - product_status
+        - product_tags
+        - product_variants
+        - product_images
+        - product_print_areas (and product_placeholders)
+        - product_external
+        - product_sales_channel_properties
+        - product_views (and product_view_files)
+        
+        Args:
+            product_id: The internal database ID of the product
+            
+        Returns:
+            bool: True if the product was successfully deleted, False otherwise
+        """
+        try:
+            # First get counts of related records for verification
+            tables_and_columns = {
+                "product_status": "product_fk",
+                "product_tags": "product_id",
+                "product_variants": "product_id",
+                "product_images": "product_id",
+                "product_print_areas": "product_id",
+                "product_external": "product_id",
+                "product_sales_channel_properties": "product_id",
+                "product_views": "product_id"
+            }
+            
+            counts_before = {}
+            for table, column in tables_and_columns.items():
+                self.db.cursor.execute(f"SELECT COUNT(*) as count FROM {table} WHERE {column} = %s", (product_id,))
+                counts_before[table] = self.db.cursor.fetchone()['count']
+            
+            # Also check placeholders and view files
+            self.db.cursor.execute("""
+                SELECT COUNT(*) as count 
+                FROM product_placeholders ph 
+                JOIN product_print_areas pa ON ph.print_area_id = pa.id 
+                WHERE pa.product_id = %s
+            """, (product_id,))
+            counts_before['product_placeholders'] = self.db.cursor.fetchone()['count']
+            
+            self.db.cursor.execute("""
+                SELECT COUNT(*) as count 
+                FROM product_view_files vf 
+                JOIN product_views v ON vf.view_id = v.id 
+                WHERE v.product_id = %s
+            """, (product_id,))
+            counts_before['product_view_files'] = self.db.cursor.fetchone()['count']
+
+            # Delete the product (this will cascade to all related tables)
+            sql = "DELETE FROM products WHERE id = %s"
+            self.db.cursor.execute(sql, (product_id,))
+            self.db.connection.commit()
+
+            # Verify that all related records were deleted
+            for table, column in tables_and_columns.items():
+                self.db.cursor.execute(f"SELECT COUNT(*) as count FROM {table} WHERE {column} = %s", (product_id,))
+                count_after = self.db.cursor.fetchone()['count']
+                if count_after > 0:
+                    print(f"Warning: {count_after} records remain in {table} after deletion")
+                elif counts_before[table] > 0:
+                    print(f"Successfully deleted {counts_before[table]} records from {table}")
+
+            # Also verify placeholders and view files
+            self.db.cursor.execute("""
+                SELECT COUNT(*) as count 
+                FROM product_placeholders ph 
+                JOIN product_print_areas pa ON ph.print_area_id = pa.id 
+                WHERE pa.product_id = %s
+            """, (product_id,))
+            count_after = self.db.cursor.fetchone()['count']
+            if count_after > 0:
+                print(f"Warning: {count_after} records remain in product_placeholders after deletion")
+            elif counts_before['product_placeholders'] > 0:
+                print(f"Successfully deleted {counts_before['product_placeholders']} records from product_placeholders")
+
+            self.db.cursor.execute("""
+                SELECT COUNT(*) as count 
+                FROM product_view_files vf 
+                JOIN product_views v ON vf.view_id = v.id 
+                WHERE v.product_id = %s
+            """, (product_id,))
+            count_after = self.db.cursor.fetchone()['count']
+            if count_after > 0:
+                print(f"Warning: {count_after} records remain in product_view_files after deletion")
+            elif counts_before['product_view_files'] > 0:
+                print(f"Successfully deleted {counts_before['product_view_files']} records from product_view_files")
+
+            return True
+
+        except Exception as e:
+            print(f"Error deleting product {product_id}: {e}")
+            return False
 
     def close(self):
         self.db.close()

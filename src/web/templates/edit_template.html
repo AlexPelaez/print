@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Template - {{ template.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col">
+            <h1 class="mb-4">Edit Template</h1>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <form method="POST" action="{{ url_for('update_template', template_id=template.id) }}" class="needs-validation" novalidate>
+                <!-- Basic Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">Title</label>
+                                    <input type="text" class="form-control" id="title" name="title" value="{{ template.title }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="blueprint_id" class="form-label">Blueprint ID</label>
+                                    <input type="number" class="form-control" id="blueprint_id" name="blueprint_id" value="{{ template.blueprint_id }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ template.description }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Provider Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-store"></i> Provider Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="print_provider_id" class="form-label">Print Provider ID</label>
+                                    <input type="number" class="form-control" id="print_provider_id" name="print_provider_id" value="{{ template.print_provider_id }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="shop_id" class="form-label">Shop ID</label>
+                                    <select class="form-select" id="shop_id" name="shop_id">
+                                        <option value="">Select a shop</option>
+                                        {% for name, id in shop_ids.items() %}
+                                            <option value="{{ id }}" {% if template.shop_id|string == id %}selected{% endif %}>{{ name }} ({{ id }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status and Settings -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-cog"></i> Status and Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="visible" name="visible" value="true" {% if template.visible %}checked{% endif %}>
+                                    <label class="form-check-label" for="visible">Visible</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="is_locked" name="is_locked" value="true" {% if template.is_locked %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_locked">Locked</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="reviewed" name="reviewed" value="true" {% if template.reviewed %}checked{% endif %}>
+                                    <label class="form-check-label" for="reviewed">Reviewed</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-tags"></i> Tags</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">Tags (comma-separated)</label>
+                            <input type="text" class="form-control" id="tags" name="tags[]" value="{{ template.tags|join(', ') }}">
+                            <div class="form-text">Enter tags separated by commas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Read-only Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-clock"></i> Additional Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Template ID:</strong> {{ template.id }}</p>
+                                <p><strong>Created At:</strong> {% if template.created_at is string %}{{ template.created_at }}{% else %}{{ template.created_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}</p>
+                                <p><strong>Updated At:</strong> {% if template.updated_at is string %}{{ template.updated_at }}{% else %}{{ template.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Number of Variants:</strong> {{ template.variants|length }}</p>
+                                <p><strong>Number of Images:</strong> {{ template.images|length }}</p>
+                                <p><strong>Number of Print Areas:</strong> {{ template.print_areas|length }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                    <a href="{{ url_for('template_detail', template_id=template.id) }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Form Validation Script -->
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+
+    // Initialize tag input with select2
+    $(document).ready(function() {
+        $('#tags').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            theme: "bootstrap-5"
+        });
+    });
+</script>
+{% endblock %} 
