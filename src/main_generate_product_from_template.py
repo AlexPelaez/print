@@ -13,6 +13,7 @@ import os
 
 product_id = '67a1c8af8a72c38bef02bb46'  # Replace with the product ID to duplicate
 shop_id = "20510104"
+image_folder = "/Users/alex/git/print/working_images_vertical" 
 
 def main():
 	openai_client = OpenAIClient()
@@ -30,11 +31,8 @@ def main():
 	# Fetch template from the database
 	template = template_dao.fetch_template_from_template_id(product_id)
 
-
 	# Map template to new product
-	new_product = TemplateProductMapper.map_template_to_product(template)
-
-	image_folder = "/Users/alex/git/print/working_images_vertical"  # Folder where images are stored
+	new_product = TemplateProductMapper.map_template_to_product(template) # Folder where images are stored
 
 		# Check if the folder exists
 	if not os.path.exists(image_folder):
@@ -71,51 +69,11 @@ def main():
 			new_product = TemplateProductMapper.replace_all_image_ids(new_product, new_image_id)
 			new_product = TemplateProductMapper.replace_product_bullet_points(new_product, bullet_points)
 			# new_product = TemplateProductMapper.replace_product_id(new_product, new_product_id)
-
-
-
 			print(new_product)
-
-			
-
 			new_id = printify_service.duplicate_product_from_model(new_product)
 			print("New ID: ", new_id)
 			
 			product_dao.insert_or_update_product(new_product)
-
-
-	
-
-	# map to new product
-
-
-
-
-	# template_data = service.get_product_details(product_id)
-	# print(template_data)
-
-	# if not template_data:
-	# 	print("No product data found.")
-	# 	return
-
-	# # 1) Convert raw JSON to our model
-	# template_model = PrintifyTemplateModel.from_dict(template_data)
-
-	# # 2) Store it in DB
-	# template_dao.insert_or_update_template(template_model)
-
-	# template_dao.set_status_by_template_id(template_model.id, "DRAFT")
-
-	# # 3) Fetch if we want
-	# try:
-	# 	template_model_new = template_dao.fetch_template_from_template_id(product_id)
-	# 	print("Fetched template:", template_model_new.title, template_model_new.id)
-	# 	print("Number of variants:", len(template_model_new.variants))
-	# 	# new_id = service.duplicate_product_from_model(product_model_new)
-	# 	# print("New ID: ", new_id)
-	# 	# ... further logic ...
-	# except ValueError as e:
-	# 	print(e)
 
 	db_conn.close()
 

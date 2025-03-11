@@ -79,7 +79,7 @@ class TextGenerator:
         """Generates a concise, SEO-friendly product title dynamically based on store and product type."""
         system_message = (
             f"You are an AI that helps generate creative product titles for {product_type}s. "
-            f"You have a strong focus on SEO. Using the provided description, generate a single unique title for a {store_name} listing."
+            f"You have a strong focus on SEO. Using the provided description, generate a single unique title for a {store_name} listing that is under 125 characters."
         )
         title = self.client.generate_text(system_message, description, max_tokens=60, temperature=0.7)
 

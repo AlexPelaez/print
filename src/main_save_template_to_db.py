@@ -29,7 +29,7 @@ def main():
 	# # 2) Store it in DB
 	template_dao.insert_or_update_template(template_model)
 
-	template_dao.set_status_by_template_id(template_model.id, "DRAFT")
+	template_dao.set_status_by_template_id(template_model.id, "TEMPLATE")
 
 	# 3) Fetch if we want
 	try:
