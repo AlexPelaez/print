@@ -1,81 +1,78 @@
-from service.printify_service import PrintifyService
-# from video_util import VideoUtil
-# from open_ai_service import OpenAiService
-import uuid
+from flask import Flask, render_template, request, flash, redirect, url_for
 import os
-import random
-from multiprocessing import Pool as ProcessPool
+from services.printify_service import PrintifyService
+from config.db_connection import DBConnection
+from models.printify_template_models import PrintifyTemplateModel
+from dao.template_dao import TemplateDAO
 
+app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
-product_id = '67a325e52405f94e2707d5c8'  # Replace with the product ID to duplicate
-image_folder = "/Users/alex/git/print/working_images_vertical"  # Folder where images are stored
+# Default shop IDs
+SHOP_IDS = {
+    "Printify Popup": "20434486",
+    "Amazon": "20510104",
+    "Ebay": "20496160"
+}
 
-# def generate_image_product():
-#     prompt = OpenAiService.generate_psychedelic_prompt()
-#     description = OpenAiService.generate_product_description(prompt)
-#     title = OpenAiService.generate_product_title(description)
+@app.route('/', methods=['GET', 'POST'])
+def save_template_to_db():
+    if request.method == 'POST':
+        product_id = request.form.get('product_id', '').strip()
+        shop_id = request.form.get('shop_id', '').strip()
+        
+        if not product_id:
+            flash('Please enter a product ID', 'error')
+            return redirect(url_for('save_template_to_db'))
+            
+        if not shop_id:
+            flash('Please enter a shop ID', 'error')
+            return redirect(url_for('save_template_to_db'))
+        
+        try:
+            result = process_template_to_db(product_id, shop_id)
+            flash(result, 'success')
+        except Exception as e:
+            flash(f'Error: {str(e)}', 'error')
+        
+        return redirect(url_for('save_template_to_db'))
+        
+    return render_template('save_template_form.html', shop_ids=SHOP_IDS)
 
-#     image = OpenAiService.generate_image(prompt)
+def process_template_to_db(product_id, shop_id):
+    """Process the template saving to database"""
+    printify_service = PrintifyService(name="PrintifyService", shop_id=shop_id)
+    
+    # Connect to the database
+    db_conn = DBConnection(host="localhost", user="root", password="", database="print_core_db")
+    db_conn.connect()
+    
+    try:
+        template_dao = TemplateDAO(db_conn)
 
-#     OpenAiService.download_image(image, f"~/gen_images/testing{uuid.uuid4()}.jpg")
-#     OpenAiService.download_image(image, '~/gen_working/test.jpg')
-#     image_folder = '~/gen_working/'
+        # Fetch the template data from Printify
+        template_data = printify_service.get_product_details(product_id)
+        
+        if not template_data:
+            raise ValueError("No product data found.")
 
-def run(image_name):
-	printify_service = PrintifyService(name="MyPrintifyService")
-	image_path = os.path.join(image_folder, image_name)
+        # Convert raw JSON to our model
+        template_model = PrintifyTemplateModel.from_dict(template_data)
+        
+        # Store it in DB
+        template_dao.insert_or_update_template(template_model)
+        template_dao.set_status_by_template_id(template_model.id, "DRAFT")
+        
+        # Fetch to verify
+        template_model_new = template_dao.fetch_template_from_template_id(product_id)
+        
+        return f"Successfully saved template: {template_model_new.title} (ID: {template_model_new.id})"
+    
+    except Exception as e:
+        raise e
+    
+    finally:
+        db_conn.close()
 
-	# Check if the file is an image (optional: check file extensions if needed)
-	if os.path.isfile(image_path) and image_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-		print(f"Processing image: {image_name}")
-		# prompt = OpenAiService.generate_psychedelic_prompt()
-		# description = OpenAiService.generate_product_description(prompt)
-		# title = OpenAiService.generate_product_title(description)
-		description = 'test'
-		title = 'test'
-
-		# Upload the new image to Printify
-		image_id = printify_service.upload_image(image_path)
-
-		if image_id:
-			print(f"Image uploaded successfully with ID: {image_id}")
-
-			# Duplicate product with the new image
-			new_product_id = printify_service.duplicate_product(product_id, image_id, title, description)
-			printify_service.get_printify_mockup(new_product_id)
-
-			# Publish the product
-			# printify_service.publish_product(new_product_id)
-
-			# Delete the product
-			printify_service.delete_product(new_product_id)
-		else:
-			print(f"Error uploading image '{image_name}'. Skipping.")
-	else:
-		print(f"Skipping non-image file: {image_name}")
-	
-
-def main():
-	# generate_image_product()
-
-
-	
-	# video_util = VideoUtil(name="MyVideoUtil")
-
-	desired_file_list = [file_name for file_name in os.listdir(image_folder) if file_name.endswith(".jpg")]
-	with ProcessPool(processes=1) as pool:
-		results = pool.map(run, desired_file_list)
-
-	print(results)
-
-	
-	# Iterate through all images in the folder
-	# for image_name in os.listdir(image_folder):
-		
-
-
-
-
-
-if __name__ == "__main__":
-	main()
+if __name__ == '__main__':
+    app.run(debug=True, port=5001)

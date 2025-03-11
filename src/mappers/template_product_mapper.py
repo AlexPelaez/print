@@ -181,6 +181,41 @@ class TemplateProductMapper:
 			for placeholder in placeholders:
 				images = placeholder.get('images', [])
 				for image in images:
-					image['id'] = new_image_id
+					image['id'] = new_image_id['id']
+		return product
+
+	@staticmethod
+	def replace_product_tags(product: PrintifyProductModel, new_tags: list[str]) -> PrintifyProductModel:
+		"""
+		Update the product's tags with a new list of strings.
+
+		Args:
+			product: The PrintifyProductModel to update
+			new_tags: List of strings representing the new tags
+
+		Returns:
+			The updated PrintifyProductModel
+		"""
+		product.tags = [ProductTagModel(product.id, tag) for tag in new_tags]
+		return product
+
+	@staticmethod
+	def replace_product_bullet_points(product: PrintifyProductModel, bullet_points: list[str]) -> PrintifyProductModel:
+		"""
+		Update the product's bullet points in the sales channel properties.
+
+		Args:
+			product: The PrintifyProductModel to update
+			bullet_points: List of strings representing the new bullet points
+
+		Returns:
+			The updated PrintifyProductModel
+		"""
+		# Iterate through all sales channel properties
+		for sales_channel_property in product.sales_channel_properties:
+			if hasattr(sales_channel_property, 'data') and isinstance(sales_channel_property.data, dict):
+				# Update the bullet_points field in the data dictionary
+				sales_channel_property.data['bullet_points'] = bullet_points
+		
 		return product
 

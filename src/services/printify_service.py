@@ -1,14 +1,15 @@
-import requests
 import os
-import base64
 import random
 import string
+import requests
+from typing import Optional, List, Dict, Any
 from dotenv import load_dotenv
 import json
 
+from clients.printify_client import PrintifyClient
+from models.printify_product_models import PrintifyProductModel, PrintifyTagModel
 
 load_dotenv()
-API_KEY = os.getenv("PRINTIFY_API_KEY")
 
 # Printify Popup - 20434486
 # Amazon - 20510104
@@ -18,80 +19,57 @@ BASE_URL = "https://api.printify.com/v1"
 
 # Headers for the API requests
 headers = {
-	"Authorization": f"Bearer {API_KEY}",
+	"Authorization": f"Bearer {os.getenv('PRINTIFY_API_KEY')}",
 	"Content-Type": "application/json",
 }
 
-
 class PrintifyService:
-	def __init__(self, name, shop_id):
+	def __init__(self, name: str, shop_id: str):
 		"""
-		:param name: Arbitrary descriptor for this service instance.
-		:param shop_id: Your Printify shop ID, e.g., '20434486'.
+		Initialize the Printify Service.
+		
+		Args:
+			name: Arbitrary descriptor for this service instance
+			shop_id: Your Printify shop ID, e.g., '20434486'
 		"""
 		self.name = name
 		self.shop_id = shop_id
+		self.client = PrintifyClient()
 
-		# Common endpoints
-		self.upload_image_url = f"{BASE_URL}/uploads/images.json"
-		self.create_product_url = f"{BASE_URL}/shops/{self.shop_id}/products.json"
+	def upload_image(self, image_path: str) -> Optional[Dict[str, Any]]:
+		"""
+		Upload an image to Printify.
+		
+		Args:
+			image_path: Path to the image file
+			
+		Returns:
+			Dict with image data including ID if successful, None otherwise
+		"""
+		return self.client.upload_image(image_path)
 
-	def upload_image(self, image_path):
-		try:
-			# Ensure the file exists
-			if not os.path.exists(image_path):
-				print(f"File does not exist: {image_path}")
-				return None
+	def get_product_details(self, product_id: str) -> Optional[Dict[str, Any]]:
+		"""
+		Get product details from Printify.
+		
+		Args:
+			product_id: Printify product ID
+			
+		Returns:
+			Dict with product data if successful, None otherwise
+		"""
+		return self.client.get_product(self.shop_id, product_id)
 
-			# Extract the file name from the path
-			file_name = os.path.basename(image_path)
-
-			# Open the image file in binary mode and encode it to Base64
-			with open(image_path, 'rb') as image_file:
-				encoded_contents = base64.b64encode(image_file.read()).decode('utf-8')
-
-			# Prepare the data with Base64-encoded contents
-			data = {
-				'file_name': file_name,
-				'contents': encoded_contents
-			}
-
-			# Send the request to upload the image
-			response = requests.post(self.upload_image_url, headers=headers, json=data)
-
-			# Debugging: check the full response
-			print(f"Response Status Code: {response.status_code}")
-			print(f"Response Content: {response.text}")
-
-			if response.status_code == 200:
-				print("Image uploaded successfully!")
-				return response.json()  # Returns the image data (ID, file_name, etc.)
-			else:
-				print(f"Error uploading image: {response.status_code} - {response.text}")
-				return None
-
-		except Exception as e:
-			print(f"An error occurred during image upload: {e}")
-			return None
-
-	def get_product_details(self, product_id):
-		fetch_product_details_url = f"{BASE_URL}/shops/{self.shop_id}/products/{product_id}.json"
-		response = requests.get(fetch_product_details_url, headers=headers)
-
-		if response.status_code == 200:
-			return response.json()
-		else:
-			print(f"Error fetching product details: {response.status_code} - {response.text}")
-			return None
-
-	def publish_product(self, product_id):
-		# Get product details to ensure we have the required data
-		product_details = self.get_product_details(product_id)
-
-		if not product_details:
-			print(f"Could not retrieve details for product {product_id}. Exiting.")
-			return
-
+	def publish_product(self, product_id: str) -> bool:
+		"""
+		Publish a product on Printify.
+		
+		Args:
+			product_id: Printify product ID
+			
+		Returns:
+			True if successful, False otherwise
+		"""
 		# Required fields for publish request
 		publish_data = {
 			"title": True,
@@ -102,27 +80,37 @@ class PrintifyService:
 			"keyFeatures": True,
 			"shipping_template": True
 		}
+		
+		return self.client.publish_product(self.shop_id, product_id, publish_data)
 
-		# Publish the product
-		publish_url = f"{BASE_URL}/shops/{self.shop_id}/products/{product_id}/publish.json"
-		response = requests.post(publish_url, json=publish_data, headers=headers)
+	def generate_sku(self, length: int = 18) -> str:
+		"""
+		Generate a random SKU with the specified length.
+		
+		Args:
+			length: Length of the SKU to generate
+			
+		Returns:
+			Random SKU string
+		"""
+		return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
-		if response.status_code == 200:
-			print(f"Product {product_id} published successfully!")
-		else:
-			print(f"Error publishing product: {response.status_code} - {response.text}")
-
-	def generate_sku(self, length=18):
-		"""Generate a random SKU with the specified length (default 18 digits)."""
-		return ''.join(random.choices(string.digits, k=length))
-
-	def duplicate_product_for_id(self, product_id):
+	def duplicate_product_for_id(self, product_id: str) -> Optional[str]:
+		"""
+		Duplicate a product with a new ID.
+		
+		Args:
+			product_id: Printify product ID to duplicate
+			
+		Returns:
+			New product ID if successful, None otherwise
+		"""
 		# Get product details
 		product_details = self.get_product_details(product_id)
 
 		if not product_details:
 			print("Could not retrieve product details. Exiting.")
-			return
+			return None
 			
 		# Update SKUs in variants with random numbers
 		variants = product_details.get('variants', [])
@@ -133,22 +121,34 @@ class PrintifyService:
 				variant['sku'] = self.generate_sku(sku_length)
 
 		# Create the duplicated product
-		response = requests.post(self.create_product_url, json=product_details, headers=headers)
-
-		if response.status_code == 200:
-			new_product_id = response.json()['id']
+		response = self.client.create_product(self.shop_id, product_details)
+		
+		if response:
+			new_product_id = response.get('id')
 			print(f"Product duplicated successfully! New product ID: {new_product_id}")
 			return new_product_id
-		else:
-			print(f"Error creating new product: {response.status_code} - {response.text}")
+		
+		return None
 
-	def duplicate_product(self, product_id, new_image_id, title, description):
+	def duplicate_product(self, product_id: str, new_image_id: Dict[str, Any], title: str, description: str) -> Optional[str]:
+		"""
+		Duplicate a product with new image, title, and description.
+		
+		Args:
+			product_id: Printify product ID to duplicate
+			new_image_id: Dict containing new image ID data
+			title: New product title
+			description: New product description
+			
+		Returns:
+			New product ID if successful, None otherwise
+		"""
 		# Get product details
 		product_details = self.get_product_details(product_id)
 
 		if not product_details:
 			print("Could not retrieve product details. Exiting.")
-			return
+			return None
 
 		# Update image IDs in print_areas (placeholders)
 		for product in product_details.get('print_areas', []):
@@ -168,30 +168,25 @@ class PrintifyService:
 		product_details['description'] = description
 
 		# Create the duplicated product
-		response = requests.post(self.create_product_url, json=product_details, headers=headers)
-
-		if response.status_code == 200:
-			new_product_id = response.json()['id']
+		response = self.client.create_product(self.shop_id, product_details)
+		
+		if response:
+			new_product_id = response.get('id')
 			print(f"Product duplicated successfully! New product ID: {new_product_id}")
 			return new_product_id
-		else:
-			print(f"Error creating new product: {response.status_code} - {response.text}")
+		
+		return None
 
-	# def send_draft_product_from_template(self, product_model: PrintifyProductModel):
-	# 	# Create the duplicated product
-	#     response = requests.post(self.create_product_url, json=product_details, headers=headers)
-
-	#     if response.status_code == 200:
-	#         new_product_id = response.json()['id']
-	#         print(f"Product created as draft successfully! New product ID: {new_product_id}")
-	#         return new_product_id
-	#     else:
-	#         print(f"Error creating new product: {response.status_code} - {response.text}")
-
-	def duplicate_product_from_model(self, product_model):
+	def duplicate_product_from_model(self, product_model: PrintifyProductModel) -> Optional[str]:
 		"""
 		Creates a new product on Printify (duplicates locally stored model),
 		matching the official product properties schema from Printify.
+		
+		Args:
+			product_model: PrintifyProductModel to duplicate
+			
+		Returns:
+			New product ID if successful, None otherwise
 		"""
 		# Build the core product_details structure
 		product_details = {
@@ -271,55 +266,67 @@ class PrintifyService:
 				product_details["sales_channel_properties"] = scp_data_list[0]
 
 		# Now make the POST request to create the product
-		response = requests.post(self.create_product_url, json=product_details, headers=headers)
-
-		if response.status_code == 200:
-			new_product_id = response.json().get("id")
+		response = self.client.create_product(self.shop_id, product_details)
+		
+		if response:
+			new_product_id = response.get("id")
 			print(f"Product duplicated successfully from model! New product ID: {new_product_id}")
 			return new_product_id
-		else:
-			print(f"Error creating new product: {response.status_code} - {response.text}")
-			return None
+		
+		return None
 
-	def delete_product(self, product_id):
-		"""Deletes a product from Printify."""
-		delete_url = f"{BASE_URL}/shops/{self.shop_id}/products/{product_id}.json"
-		response = requests.delete(delete_url, headers=headers)
+	def delete_product(self, product_id: str) -> bool:
+		"""
+		Delete a product from Printify.
+		
+		Args:
+			product_id: Printify product ID
+			
+		Returns:
+			True if successful, False otherwise
+		"""
+		return self.client.delete_product(self.shop_id, product_id)
 
-		if response.status_code == 200:
-			print(f"Product {product_id} deleted successfully!")
-		else:
-			print(f"Error deleting product: {response.status_code} - {response.text}")
-
-	def get_printify_mockup(self, product_id, save_folder="~/test_mocks"):
+	def get_printify_mockup(self, product_id: str, mockup_index: int = 75, save_folder: str = "~/test_mocks") -> Optional[str]:
+		"""
+		Download a mockup image for a product.
+		
+		Args:
+			product_id: Printify product ID
+			mockup_index: Index of the mockup image to download (default is 75)
+			save_folder: Folder to save the mockup image
+			
+		Returns:
+			Path to the saved mockup image if successful, None otherwise
+		"""
 		# Ensure save directory exists
 		save_folder = os.path.expanduser(save_folder)
 		os.makedirs(save_folder, exist_ok=True)
 
 		# Fetch product details from Printify
-		fetch_product_url = f"{BASE_URL}/shops/{self.shop_id}/products/{product_id}.json"
-		response = requests.get(fetch_product_url, headers=headers)
+		product_data = self.get_product_details(product_id)
+		
+		if not product_data:
+			return None
 
-		if response.status_code == 200:
-			product_data = response.json()
-			mockups = product_data.get("images", [])
+		mockups = product_data.get("images", [])
 
-			# Ensure there are at least 76 mockups
-			if len(mockups) < 76:
-				print("Error: The product does not have a 76th mockup.")
-				return
+		# Ensure there are at least mockup_index+1 mockups
+		if len(mockups) <= mockup_index:
+			print(f"Error: The product does not have a {mockup_index+1}th mockup.")
+			return None
 
-			# Get the 76th mockup image URL
-			mockup_url = mockups[75]["src"]
-			image_response = requests.get(mockup_url, stream=True)
+		# Get the mockup image URL
+		mockup_url = mockups[mockup_index]["src"]
+		image_response = requests.get(mockup_url, stream=True)
 
-			if image_response.status_code == 200:
-				image_filename = os.path.join(save_folder, f"{product_id}_mockup_76.jpg")
-				with open(image_filename, "wb") as file:
-					for chunk in image_response.iter_content(1024):
-						file.write(chunk)
-				print(f"76th Mockup saved: {image_filename}")
-			else:
-				print(f"Failed to download the 76th mockup: {image_response.status_code}")
+		if image_response.status_code == 200:
+			image_filename = os.path.join(save_folder, f"{product_id}_mockup_{mockup_index+1}.jpg")
+			with open(image_filename, "wb") as file:
+				for chunk in image_response.iter_content(1024):
+					file.write(chunk)
+			print(f"Mockup saved: {image_filename}")
+			return image_filename
 		else:
-			print(f"Error: {response.status_code} - {response.text}")
+			print(f"Failed to download the mockup: {image_response.status_code}")
+			return None
