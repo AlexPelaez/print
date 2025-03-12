@@ -617,7 +617,7 @@ class TemplateDAO:
 
 
 	def set_status_by_template_id(self, template_id: str, new_status: str):
-		if new_status not in ("DRAFT", "PUBLISHED"):
+		if new_status not in ("DRAFT", "PUBLISHED", "TEMPLATE"):
 			raise ValueError(f"Invalid status '{new_status}'.")
 		# Use the template_id column to search for the record.
 		select_q = "SELECT id FROM templates WHERE template_id = %s"

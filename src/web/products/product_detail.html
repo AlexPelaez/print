@@ -1,0 +1,223 @@
+{% extends "./base.html" %}
+
+{% block title %}{{ product.title }} - Printify Product Manager{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Button -->
+    <div class="row mb-4">
+        <div class="col">
+            <a href="{{ url_for('product.products') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
+    </div>
+
+    <!-- Product Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="display-4">{{ product.title }}</h1>
+                <span class="badge {% if product.status == 'PUBLISHED' %}bg-success{% else %}bg-warning{% endif %} fs-5">
+                    {{ product.status }}
+                </span>
+            </div>
+            <div class="mb-3">
+                {% if product.tags %}
+                    {% for tag in product.tags %}
+                        <span class="badge">{{ tag.tag }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <p class="lead">{{ product.description }}</p>
+            <div class="text-muted">
+                <small>
+                    <i class="fas fa-clock"></i> Last updated: {{ product.updated_at.strftime('%Y-%m-%d %H:%M') if not product.updated_at is string else product.updated_at }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Image and Gallery -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <img id="mainImage" src="{{ mockup_images[0] if mockup_images else '' }}" 
+                 class="product-detail-image w-100" 
+                 alt="{{ product.title }}"
+                 onerror="this.onerror=null; this.src='https://via.placeholder.com/800x600?text=No+Image+Available';">
+        </div>
+        <div class="col-md-4">
+            <div class="image-gallery">
+                {% for image_url in mockup_images %}
+                <img src="{{ image_url }}" 
+                     class="thumbnail {% if loop.first %}active{% endif %}"
+                     alt="Product mockup {{ loop.index }}"
+                     onclick="updateMainImage(this)">
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Product Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Product ID</dt>
+                        <dd class="col-sm-8">{{ product.id }}</dd>
+
+                        <dt class="col-sm-4">Blueprint ID</dt>
+                        <dd class="col-sm-8">{{ product.blueprint_id }}</dd>
+
+                        <dt class="col-sm-4">Created At</dt>
+                        <dd class="col-sm-8">{{ product.created_at.strftime('%Y-%m-%d %H:%M') if not product.created_at is string else product.created_at }}</dd>
+
+                        <dt class="col-sm-4">Updated At</dt>
+                        <dd class="col-sm-8">{{ product.updated_at.strftime('%Y-%m-%d %H:%M') if not product.updated_at is string else product.updated_at }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> Product Settings</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Print Provider</dt>
+                        <dd class="col-sm-8">{{ product.print_provider_id }}</dd>
+
+                        <dt class="col-sm-4">Shop ID</dt>
+                        <dd class="col-sm-8">{{ product.shop_id }}</dd>
+
+                        <dt class="col-sm-4">Variants</dt>
+                        <dd class="col-sm-8">{{ product.variants|length }}</dd>
+
+                        <dt class="col-sm-4">Print Areas</dt>
+                        <dd class="col-sm-8">{{ product.print_areas|length }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Variants -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tags"></i> Variants ({{ product.variants|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Variant ID</th>
+                                    <th>Title</th>
+                                    <th>SKU</th>
+                                    <th>Price</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for variant in product.variants %}
+                                <tr>
+                                    <td>{{ variant.data.id }}</td>
+                                    <td>{{ variant.data.title }}</td>
+                                    <td>{{ variant.data.sku }}</td>
+                                    <td>${{ variant.data.price/100 if variant.data.price else '0.00' }}</td>
+                                    <td>${{ variant.data.cost/100 if variant.data.cost else '0.00' }}</td>
+                                    <td>
+                                        <span class="badge {% if variant.data.is_enabled %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ 'Active' if variant.data.is_enabled else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No variants available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('product.edit_product', product_id=product.id) }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit Product
+                        </a>
+                        <a href="#" class="btn btn-success">
+                            <i class="fas fa-copy"></i> Clone Product
+                        </a>
+                        <button class="btn btn-danger" onclick="confirmDelete('{{ product.id }}')">
+                            <i class="fas fa-trash"></i> Delete Product
+                        </button>
+                        {% if product.status != 'PUBLISHED' %}
+                        <button class="btn btn-success" onclick="publishProduct('{{ product.id }}')">
+                            <i class="fas fa-cloud-upload-alt"></i> Publish
+                        </button>
+                        {% else %}
+                        <button class="btn btn-warning" onclick="unpublishProduct('{{ product.id }}')">
+                            <i class="fas fa-cloud-download-alt"></i> Unpublish
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+function updateMainImage(thumbnail) {
+    // Update main image
+    document.getElementById('mainImage').src = thumbnail.src;
+    
+    // Update active state of thumbnails
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+    });
+    thumbnail.classList.add('active');
+}
+
+function confirmDelete(productId) {
+    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+        window.location.href = `{{ url_for('product.delete_product') }}?product_id=${productId}`;
+    }
+}
+
+function publishProduct(productId) {
+    if (confirm('Are you sure you want to publish this product?')) {
+        window.location.href = `{{ url_for('product.publish_product') }}?product_id=${productId}`;
+    }
+}
+
+function unpublishProduct(productId) {
+    if (confirm('Are you sure you want to unpublish this product?')) {
+        window.location.href = `{{ url_for('product.unpublish_product') }}?product_id=${productId}`;
+    }
+}
+</script>
+{% endblock %} 

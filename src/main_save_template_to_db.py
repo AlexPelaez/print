@@ -3,7 +3,7 @@ from config.db_connection import DBConnection
 from models.printify_template_models import PrintifyTemplateModel
 from dao.template_dao import TemplateDAO
 
-product_id = '67a1c8af8a72c38bef02bb46'  # Replace with the product ID to duplicate
+product_id = '67cfcae441155d16ff096d45'  # Replace with the product ID to duplicate
 shop_id = "20510104"
 
 def main():

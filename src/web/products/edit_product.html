@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+{% extends "./base.html" %}
 
-{% block title %}Edit Template - {{ template.title }}{% endblock %}
+{% block title %}Edit Product - {{ product.title }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <div class="row">
         <div class="col">
-            <h1 class="mb-4">Edit Template</h1>
+            <h1 class="mb-4">Edit Product</h1>
             
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -17,7 +17,7 @@
                 {% endif %}
             {% endwith %}
             
-            <form method="POST" action="{{ url_for('update_template', template_id=template.id) }}" class="needs-validation" novalidate>
+            <form method="POST" action="{{ url_for('product.update_product', product_id=product.id) }}" class="needs-validation" novalidate>
                 <!-- Basic Information -->
                 <div class="card mb-4">
                     <div class="card-header">
@@ -28,19 +28,19 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="title" class="form-label">Title</label>
-                                    <input type="text" class="form-control" id="title" name="title" value="{{ template.title }}" required>
+                                    <input type="text" class="form-control" id="title" name="title" value="{{ product.title }}" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="blueprint_id" class="form-label">Blueprint ID</label>
-                                    <input type="number" class="form-control" id="blueprint_id" name="blueprint_id" value="{{ template.blueprint_id }}">
+                                    <input type="number" class="form-control" id="blueprint_id" name="blueprint_id" value="{{ product.blueprint_id }}">
                                 </div>
                             </div>
                         </div>
                         <div class="mb-3">
                             <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3">{{ template.description }}</textarea>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ product.description }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="print_provider_id" class="form-label">Print Provider ID</label>
-                                    <input type="number" class="form-control" id="print_provider_id" name="print_provider_id" value="{{ template.print_provider_id }}">
+                                    <input type="number" class="form-control" id="print_provider_id" name="print_provider_id" value="{{ product.print_provider_id }}">
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -64,7 +64,7 @@
                                     <select class="form-select" id="shop_id" name="shop_id">
                                         <option value="">Select a shop</option>
                                         {% for name, id in shop_ids.items() %}
-                                            <option value="{{ id }}" {% if template.shop_id|string == id %}selected{% endif %}>{{ name }} ({{ id }})</option>
+                                            <option value="{{ id }}" {% if product.shop_id|string == id %}selected{% endif %}>{{ name }} ({{ id }})</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -82,20 +82,59 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" id="visible" name="visible" value="true" {% if template.visible %}checked{% endif %}>
+                                    <input class="form-check-input" type="checkbox" id="visible" name="visible" value="true" {% if product.visible %}checked{% endif %}>
                                     <label class="form-check-label" for="visible">Visible</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" id="is_locked" name="is_locked" value="true" {% if template.is_locked %}checked{% endif %}>
+                                    <input class="form-check-input" type="checkbox" id="is_locked" name="is_locked" value="true" {% if product.is_locked %}checked{% endif %}>
                                     <label class="form-check-label" for="is_locked">Locked</label>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-check form-switch mb-3">
-                                    <input class="form-check-input" type="checkbox" id="reviewed" name="reviewed" value="true" {% if template.reviewed %}checked{% endif %}>
+                                    <input class="form-check-input" type="checkbox" id="reviewed" name="reviewed" value="true" {% if product.reviewed %}checked{% endif %}>
                                     <label class="form-check-label" for="reviewed">Reviewed</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="DRAFT" {% if product.status == 'DRAFT' %}selected{% endif %}>Draft</option>
+                                        <option value="PUBLISHED" {% if product.status == 'PUBLISHED' %}selected{% endif %}>Published</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-dollar-sign"></i> Default Pricing</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> This sets the default price for all variants. Individual variant prices can be set in the Printify dashboard.
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="base_cost" class="form-label">Base Cost ($)</label>
+                                    <input type="number" step="0.01" class="form-control" id="base_cost" name="base_cost" value="{{ base_cost if base_cost else '0.00' }}" readonly>
+                                    <div class="form-text">Base cost from the print provider (cannot be changed)</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="default_price" class="form-label">Default Price ($)</label>
+                                    <input type="number" step="0.01" class="form-control" id="default_price" name="default_price" value="{{ default_price if default_price else '0.00' }}">
+                                    <div class="form-text">Your selling price</div>
                                 </div>
                             </div>
                         </div>
@@ -110,7 +149,8 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label for="tags" class="form-label">Tags (comma-separated)</label>
-                            <input type="text" class="form-control" id="tags" name="tags[]" value="{{ template.tags|join(', ') }}">
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   value="{% if product.tags %}{% for tag in product.tags %}{{ tag.tag }}{% if not loop.last %},{% endif %}{% endfor %}{% endif %}">
                             <div class="form-text">Enter tags separated by commas</div>
                         </div>
                     </div>
@@ -124,14 +164,14 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                <p><strong>Template ID:</strong> {{ template.id }}</p>
-                                <p><strong>Created At:</strong> {% if template.created_at is string %}{{ template.created_at }}{% else %}{{ template.created_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}</p>
-                                <p><strong>Updated At:</strong> {% if template.updated_at is string %}{{ template.updated_at }}{% else %}{{ template.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}</p>
+                                <p><strong>Product ID:</strong> {{ product.id }}</p>
+                                <p><strong>Created At:</strong> {% if product.created_at is string %}{{ product.created_at }}{% else %}{{ product.created_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}</p>
+                                <p><strong>Updated At:</strong> {% if product.updated_at is string %}{{ product.updated_at }}{% else %}{{ product.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}{% endif %}</p>
                             </div>
                             <div class="col-md-6">
-                                <p><strong>Number of Variants:</strong> {{ template.variants|length }}</p>
-                                <p><strong>Number of Images:</strong> {{ template.images|length }}</p>
-                                <p><strong>Number of Print Areas:</strong> {{ template.print_areas|length }}</p>
+                                <p><strong>Number of Variants:</strong> {{ product.variants|length }}</p>
+                                <p><strong>Number of Images:</strong> {{ product.images|length }}</p>
+                                <p><strong>Number of Print Areas:</strong> {{ product.print_areas|length }}</p>
                             </div>
                         </div>
                     </div>
@@ -142,7 +182,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
-                    <a href="{{ url_for('template.template_detail', template_id=template.id) }}" class="btn btn-secondary">
+                    <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>

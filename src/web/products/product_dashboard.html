@@ -1,0 +1,166 @@
+{% extends "./base.html" %}
+
+{% block title %}Product Dashboard - Printify Manager{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h1 class="display-4">Product Dashboard</h1>
+            <p class="lead">Manage and monitor your Printify products in one place</p>
+            <a href="{{ url_for('product.products') }}" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-boxes"></i> Browse All Products
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row row-cols-1 row-cols-md-4 g-4 mb-5">
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-boxes fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Total Products</h5>
+                    <p class="card-text display-6">{{ stats.total_products }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Published Products</h5>
+                    <p class="card-text display-6">{{ stats.published_products }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-tags fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Unique Tags</h5>
+                    <p class="card-text display-6">{{ stats.unique_tags }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-dollar-sign fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Avg. Price</h5>
+                    <p class="card-text display-6">{{ '%.2f'|format(stats.avg_price|default(0)) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Products -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-4">Recent Products</h2>
+            {% if recent_products %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for product in recent_products %}
+                <div class="col">
+                    <div class="card h-100">
+                        {% if product.mockup_url %}
+                        <img src="{{ product.mockup_url }}" class="card-img-top" alt="{{ product.title }}">
+                        {% else %}
+                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.title }}</h5>
+                            <p class="card-text">{{ product.description[:100] + '...' if product.description|length > 100 else product.description }}</p>
+                            
+                            {% if product.tags %}
+                            <div class="mb-3">
+                                {% for tag in product.tags[:3] %}
+                                {% if tag is mapping and tag.tag is defined %}
+                                <span class="badge bg-secondary me-1">{{ tag.tag }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                                {% endif %}
+                                {% endfor %}
+                                {% if product.tags|length > 3 %}
+                                <span class="badge bg-light text-dark">+{{ product.tags|length - 3 }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                                <span class="badge {% if product.status == 'PUBLISHED' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                    {{ product.status }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>Created: {{ product.created_at.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No products found. Create your first product to get started.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Popular Tags -->
+    {% if stats.tag_counts %}
+    <div class="row mb-5">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tags"></i> Popular Tags</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for tag, count in stats.tag_counts.items() %}
+                        <a href="{{ url_for('product.products') }}?tag={{ tag }}" class="btn btn-outline-secondary">
+                            {{ tag }} <span class="badge bg-secondary ms-1">{{ count }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('product.products') }}?sort=updated_at" class="btn btn-outline-primary">
+                            <i class="fas fa-clock"></i> View Recently Updated
+                        </a>
+                        <a href="{{ url_for('product.products') }}?status=PUBLISHED" class="btn btn-outline-success">
+                            <i class="fas fa-check-circle"></i> View Published Products
+                        </a>
+                        <a href="{{ url_for('product.products') }}?status=DRAFT" class="btn btn-outline-warning">
+                            <i class="fas fa-pencil-alt"></i> View Draft Products
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-sync"></i> Sync with Printify
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -666,6 +666,163 @@ class ProductDAO:
         self.db.cursor.execute(query)
         return self.db.cursor.fetchall()
 
+    def count_products(self, search_term=None, status=None):
+        """
+        Count the total number of products with optional filtering.
+        
+        Args:
+            search_term (str, optional): Search term to filter products by title or description
+            status (str, optional): Filter by status (DRAFT or PUBLISHED)
+            
+        Returns:
+            int: Total number of products matching the criteria
+        """
+        query = """
+        SELECT COUNT(p.id) as count
+        FROM products p
+        """
+        
+        conditions = []
+        params = []
+        
+        # Join with status table if status filter is provided
+        if status:
+            query += """
+            JOIN product_status ps ON p.id = ps.product_fk
+            """
+            conditions.append("ps.status = %s")
+            params.append(status)
+        
+        # Add search condition if search term is provided
+        if search_term:
+            conditions.append("(p.title LIKE %s OR p.description LIKE %s)")
+            params.extend([f"%{search_term}%", f"%{search_term}%"])
+        
+        # Add WHERE clause if we have conditions
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+        
+        self.db.cursor.execute(query, params)
+        result = self.db.cursor.fetchone()
+        return result['count'] if result else 0
+        
+    def fetch_products_paginated(self, limit=10, offset=0, search_term=None, status=None, sort_by='updated_at'):
+        """
+        Fetch products with pagination and optional filtering.
+        
+        Args:
+            limit (int): Maximum number of products to fetch
+            offset (int): Number of products to skip
+            search_term (str, optional): Search term to filter products by title or description
+            status (str, optional): Filter by status (DRAFT or PUBLISHED)
+            sort_by (str, optional): Field to sort by ('created_at', 'updated_at', 'title'). Defaults to 'updated_at'.
+            
+        Returns:
+            list: List of PrintifyProductModel objects
+        """
+        # Base query to get product IDs with pagination
+        query = """
+        SELECT p.product_id
+        FROM products p
+        """
+        
+        conditions = []
+        params = []
+        
+        # Join with status table if status filter is provided
+        if status:
+            query += """
+            JOIN product_status ps ON p.id = ps.product_fk
+            """
+            conditions.append("ps.status = %s")
+            params.append(status)
+        
+        # Add search condition if search term is provided
+        if search_term:
+            conditions.append("(p.title LIKE %s OR p.description LIKE %s)")
+            params.extend([f"%{search_term}%", f"%{search_term}%"])
+        
+        # Add WHERE clause if we have conditions
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+        
+        # Add ORDER BY clause based on sort_by parameter
+        if sort_by == 'title':
+            query += " ORDER BY p.title ASC"
+        elif sort_by == 'created_at':
+            query += " ORDER BY p.created_at DESC"
+        else:  # Default to updated_at
+            query += " ORDER BY p.updated_at DESC"
+        
+        # Add LIMIT clause
+        query += " LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+        
+        self.db.cursor.execute(query, params)
+        product_ids = [row['product_id'] for row in self.db.cursor.fetchall()]
+        
+        # Fetch complete product data for each ID
+        products = []
+        for product_id in product_ids:
+            product = self.fetch_product_from_product_id(product_id)
+            if product:
+                # Try to get the status for this product
+                self.db.cursor.execute("""
+                    SELECT ps.status 
+                    FROM product_status ps 
+                    JOIN products p ON ps.product_fk = p.id 
+                    WHERE p.product_id = %s
+                """, (product_id,))
+                status_row = self.db.cursor.fetchone()
+                if status_row:
+                    product.status = status_row['status']
+                else:
+                    product.status = "DRAFT"  # Default status
+                
+                # Get price from first variant
+                if product.variants and hasattr(product.variants[0], 'data') and 'price' in product.variants[0].data:
+                    product.price = product.variants[0].data['price']
+                else:
+                    product.price = None
+                    
+                products.append(product)
+        
+        return products
+
+    def get_product_by_id(self, product_id):
+        """
+        Get a product by its ID. This is an alias for fetch_product_from_product_id
+        with additional status information.
+        
+        Args:
+            product_id (str): The product ID to fetch
+            
+        Returns:
+            PrintifyProductModel: The product if found, None otherwise
+        """
+        product = self.fetch_product_from_product_id(product_id)
+        if product:
+            # Try to get the status for this product
+            self.db.cursor.execute("""
+                SELECT ps.status 
+                FROM product_status ps 
+                JOIN products p ON ps.product_fk = p.id 
+                WHERE p.product_id = %s
+            """, (product_id,))
+            status_row = self.db.cursor.fetchone()
+            if status_row:
+                product.status = status_row['status']
+            else:
+                product.status = "DRAFT"  # Default status
+            
+            # Get price from first variant
+            if product.variants and hasattr(product.variants[0], 'data') and 'price' in product.variants[0].data:
+                product.price = product.variants[0].data['price']
+            else:
+                product.price = None
+        
+        return product
+
     def delete_product(self, product_id: str) -> bool:
         """
         Delete a product from the database by its internal ID.

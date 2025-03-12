@@ -38,7 +38,7 @@
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ template.title }}</h5>
-                <p class="card-text">{{ template.description[:150] + '...' if template.description|length > 150 else template.description }}</p>
+                <p class="card-text">{{ template.description[:100] + '...' if template.description|length > 100 else template.description }}</p>
                 <div class="mb-3">
                     {% if template.tags %}
                         {% for tag in template.tags.split(',') %}
@@ -46,7 +46,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                <a href="{{ url_for('template_detail', template_id=template.id) }}" class="btn btn-primary">
+                <a href="{{ url_for('template.template_detail', template_id=template.id) }}" class="btn btn-primary">
                     <i class="fas fa-eye"></i> View Details
                 </a>
             </div>

@@ -1,0 +1,192 @@
+{% extends "./base.html" %}
+
+{% block title %}Product Dashboard - Printify Product Manager{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section -->
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h1 class="display-3">Product Dashboard</h1>
+            <p class="lead">Manage and organize your Printify products with ease</p>
+            <a href="{{ url_for('product.products') }}" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-box"></i> Browse Products
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-box fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Total Products</h5>
+                    <p class="card-text display-6">{{ stats.total_products if stats.total_products else 0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Published Products</h5>
+                    <p class="card-text display-6">{{ stats.published_products if stats.published_products else 0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-tags fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Unique Tags</h5>
+                    <p class="card-text display-6">{{ stats.unique_tags if stats.unique_tags else 0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Products -->
+    {% if recent_products %}
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-4">Recent Products</h2>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for product in recent_products %}
+                <div class="col">
+                    <div class="card h-100">
+                        {% if product.mockup_url %}
+                        <img src="{{ product.mockup_url }}" class="card-img-top" alt="{{ product.title }}">
+                        {% else %}
+                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.title }}</h5>
+                            <p class="card-text">{{ product.description[:100] + '...' if product.description|length > 100 else product.description }}</p>
+                            <div class="mb-2">
+                                <span class="badge {% if product.status == 'PUBLISHED' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ product.status }}
+                                </span>
+                            </div>
+                            <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                        <div class="card-footer text-muted d-flex justify-content-between">
+                            <small>Created: {{ product.created_at.strftime('%Y-%m-%d') }}</small>
+                            <small>${{ product.price if product.price else '0.00' }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('product.products') }}" class="btn btn-outline-primary">
+                    View All Products <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No products found. Start by adding some products to your collection.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> Create New Product
+                        </a>
+                        <a href="{{ url_for('product.products') }}?sort=updated_at" class="btn btn-outline-primary">
+                            <i class="fas fa-clock"></i> View Recently Updated
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-file-export"></i> Export Products
+                        </a>
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-sync"></i> Sync with Printify
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Analytics (if available) -->
+    <div class="row mt-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Product Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Products by Status</h6>
+                            <div class="progress mb-4" style="height: 25px;">
+                                {% if stats.total_products and stats.published_products %}
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     data-width="{{ (stats.published_products / stats.total_products * 100) }}">
+                                    Published ({{ stats.published_products }})
+                                </div>
+                                <div class="progress-bar bg-warning" role="progressbar"
+                                     data-width="{{ ((stats.total_products - stats.published_products) / stats.total_products * 100) }}">
+                                    Draft ({{ stats.total_products - stats.published_products }})
+                                </div>
+                                {% else %}
+                                <div class="progress-bar" role="progressbar" style="width: 0%">
+                                    No data available
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Most Used Tags</h6>
+                            <div id="tag-cloud" class="mb-4">
+                                {% if stats.tag_counts %}
+                                    {% for tag, count in stats.tag_counts.items() %}
+                                        <span class="badge" data-font-size="{{ 100 + count * 20 }}">{{ tag }} ({{ count }})</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-muted">No tags found</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Apply dynamic styles after page load to avoid CSS linting issues
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set progress bar widths
+        document.querySelectorAll('.progress-bar[data-width]').forEach(function(el) {
+            el.style.width = el.getAttribute('data-width') + '%';
+        });
+        
+        // Set tag font sizes
+        document.querySelectorAll('.badge[data-font-size]').forEach(function(el) {
+            el.style.fontSize = el.getAttribute('data-font-size') + '%';
+        });
+    });
+</script>
+{% endblock %} 

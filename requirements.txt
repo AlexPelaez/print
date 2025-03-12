@@ -4,3 +4,6 @@ pillow
 cv2
 requests
 python-dotenv
+flask
+jinja2
+werkzeug
