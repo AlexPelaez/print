@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, g
+from flask import Flask, render_template, request, redirect, url_for, g, current_app
 import os
 import sys
 from pathlib import Path
 from datetime import datetime
 import math
+from jinja2 import ChoiceLoader, FileSystemLoader
 
 # Add the parent directory to the path so we can import our modules
 sys.path.append(str(Path(__file__).parent.parent))
@@ -13,11 +14,29 @@ from dao.template_dao import TemplateDAO
 from dao.product_dao import ProductDAO
 from controllers import all_blueprints
 
-app = Flask(__name__)
+# Create Flask app with standard template folder
+app = Flask(__name__, template_folder='templates')
 app.secret_key = os.urandom(24)
+
+# Set up custom template loader for multiple directories
+template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+products_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'products')
+components_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'components')
+
+# Create a choice loader with multiple template directories
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader(template_path),
+    FileSystemLoader(products_path),
+    FileSystemLoader(components_path)
+])
 
 # Add hasattr function to Jinja2 environment
 app.jinja_env.globals['hasattr'] = hasattr
+
+# Add current_app to template context
+@app.context_processor
+def inject_current_app():
+    return dict(current_app=current_app)
 
 # Register all blueprints
 for blueprint, url_prefix in all_blueprints:
