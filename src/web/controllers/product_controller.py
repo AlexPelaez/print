@@ -7,7 +7,7 @@ from dao.product_dao import ProductDAO
 from services.printify_service import PrintifyService
 
 # Create product blueprint
-product_bp = Blueprint('product', __name__, template_folder='../products')
+product_bp = Blueprint('product', __name__, template_folder='../dashboard/products')
 
 # Cache for mockup images
 mockup_cache = {}

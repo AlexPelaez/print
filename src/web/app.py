@@ -19,15 +19,20 @@ app = Flask(__name__, template_folder='templates')
 app.secret_key = os.urandom(24)
 
 # Set up custom template loader for multiple directories
-template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
-products_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'products')
-components_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'components')
+base_path = os.path.dirname(os.path.abspath(__file__))
+template_path = os.path.join(base_path, 'templates')
+products_path = os.path.join(base_path, 'products')
+components_path = os.path.join(base_path, 'components')
+dashboard_path = os.path.join(base_path, 'dashboard')
+logged_out_path = os.path.join(base_path, 'logged_out')
 
 # Create a choice loader with multiple template directories
 app.jinja_loader = ChoiceLoader([
     FileSystemLoader(template_path),
     FileSystemLoader(products_path),
-    FileSystemLoader(components_path)
+    FileSystemLoader(components_path),
+    FileSystemLoader(dashboard_path),
+    FileSystemLoader(logged_out_path)
 ])
 
 # Add hasattr function to Jinja2 environment
@@ -65,7 +70,7 @@ def index():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('home.html', stats=stats, now=now)
+        return render_template('index.html', stats=stats, now=now)
     
     finally:
         # Close the database connection
