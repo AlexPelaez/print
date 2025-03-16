@@ -13,7 +13,7 @@
 <!-- Search Form -->
 <div class="row mb-4">
     <div class="col">
-        <form class="search-form" method="GET" action="{{ url_for('templates') }}">
+        <form class="search-form" method="GET" action="{{ url_for('template.templates') }}">
             <div class="input-group">
                 <input type="text" class="form-control" name="search" placeholder="Search templates..." value="{{ request.args.get('search', '') }}">
                 <button class="btn btn-primary" type="submit">
@@ -60,7 +60,7 @@
         <div class="alert alert-info">
             <i class="fas fa-info-circle"></i> No templates found.
             {% if request.args.get('search') %}
-                <a href="{{ url_for('templates') }}" class="alert-link">Clear search</a>
+                <a href="{{ url_for('template.templates') }}" class="alert-link">Clear search</a>
             {% endif %}
         </div>
     </div>
@@ -74,19 +74,19 @@
         <nav aria-label="Template navigation">
             <ul class="pagination">
                 <li class="page-item {{ 'disabled' if page == 1 else '' }}">
-                    <a class="page-link" href="{{ url_for('templates', page=page-1, search=request.args.get('search', '')) if page > 1 else '#' }}">
+                    <a class="page-link" href="{{ url_for('template.templates', page=page-1, search=request.args.get('search', '')) if page > 1 else '#' }}">
                         <i class="fas fa-chevron-left"></i> Previous
                     </a>
                 </li>
                 
                 {% for p in range(max(1, page-2), min(total_pages+1, page+3)) %}
                 <li class="page-item {{ 'active' if p == page else '' }}">
-                    <a class="page-link" href="{{ url_for('templates', page=p, search=request.args.get('search', '')) }}">{{ p }}</a>
+                    <a class="page-link" href="{{ url_for('template.templates', page=p, search=request.args.get('search', '')) }}">{{ p }}</a>
                 </li>
                 {% endfor %}
                 
                 <li class="page-item {{ 'disabled' if page == total_pages else '' }}">
-                    <a class="page-link" href="{{ url_for('templates', page=page+1, search=request.args.get('search', '')) if page < total_pages else '#' }}">
+                    <a class="page-link" href="{{ url_for('template.templates', page=page+1, search=request.args.get('search', '')) if page < total_pages else '#' }}">
                         Next <i class="fas fa-chevron-right"></i>
                     </a>
                 </li>

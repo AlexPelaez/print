@@ -4,6 +4,7 @@ import math
 
 from config.db_connection import DBConnection
 from dao.product_dao import ProductDAO
+from dao.template_dao import TemplateDAO
 from services.printify_service import PrintifyService
 
 # Create product blueprint
@@ -17,6 +18,35 @@ DEFAULT_SHOP_ID = "20510104"
 
 # Number of products per page
 PRODUCTS_PER_PAGE = 12
+
+@product_bp.route('/dashboard/home')
+def index():
+    """Main homepage with navigation to templates and products"""
+    # Connect to the database
+    db_conn = DBConnection(host="localhost", user="root", password="", database="print_core_db")
+    db_conn.connect()
+    
+    try:
+        # Initialize the DAOs
+        template_dao = TemplateDAO(db_conn)
+        product_dao = ProductDAO(db_conn)
+        
+        # Get stats for the dashboard
+        stats = {
+            "total_templates": template_dao.count_templates(),
+            "total_products": product_dao.count_products(),
+            "published_products": product_dao.count_products(status="PUBLISHED"),
+            "unique_tags": 0  # We'd need to count this across both templates and products
+        }
+        
+        # Include current year for copyright in footer
+        now = datetime.now()
+        
+        return render_template('./logged_out/index.html', stats=stats, now=now)
+    
+    finally:
+        # Close the database connection
+        db_conn.close()
 
 @product_bp.route('/dashboard')
 def dashboard():

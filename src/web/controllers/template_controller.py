@@ -8,7 +8,7 @@ from services.printify_service import PrintifyService
 from models.printify_template_models import PrintifyTagModel
 
 # Create template blueprint
-template_bp = Blueprint('template', __name__, template_folder='templates')
+template_bp = Blueprint('template', __name__, template_folder='../dashboard/templates')
 
 # Cache for mockup images
 mockup_cache = {}
@@ -118,7 +118,7 @@ def dashboard():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('index.html', stats=stats, recent_templates=templates_for_display, now=now)
+        return render_template('template_dashboard.html', stats=stats, recent_templates=templates_for_display, now=now)
     
     finally:
         # Close the database connection
