@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, g
+from flask import Blueprint, render_template, request, redirect, url_for, flash, g, current_app
 from datetime import datetime, timedelta
 import math
+import os
 
 from config.db_connection import DBConnection
 from dao.product_dao import ProductDAO
@@ -407,11 +408,22 @@ def publish_product():
             flash('Product not found', 'error')
             return redirect(url_for('product.products'))
         
-        # Update status
+        # First, call PrintifyService to publish the product on Printify
+        # Get the shop_id from app config or environment
+        printify_service = PrintifyService(name="PrintifyService", shop_id=DEFAULT_SHOP_ID)
+        
+        # Publish to Printify API
+        publish_success = printify_service.publish_product(product_id)
+        
+        if not publish_success:
+            flash('Failed to publish product on Printify', 'error')
+            return redirect(url_for('product.product_detail', product_id=product_id))
+        
+        # If Printify publishing was successful, update status in the database
         product.status = "PUBLISHED"
         product_dao.update_product(product)
         
-        flash('Product published successfully', 'success')
+        flash('Product published successfully on Printify and status updated', 'success')
         return redirect(url_for('product.product_detail', product_id=product_id))
     
     finally:

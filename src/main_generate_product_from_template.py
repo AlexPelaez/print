@@ -12,7 +12,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 
 
-product_id = '67a1c8af8a72c38bef02bb46'  # Replace with the product ID to duplicate
+product_id = '67cfca8600271d354f0a1f70'  # Replace with the product ID to duplicate
 shop_id = "20510104"
 image_folder = "/Users/alex/git/print/working_images_vertical" 
 
@@ -36,14 +36,14 @@ def process_image(image_name, image_folder, text_generator, printify_service, te
 		
 		print("\nGenerating product content...")
 		new_description = text_generator.generate_product_description("trippy mandlebrot set inspired design with crazy trippy patterns", "Amazon", "iphone 16 case")
-		new_title = text_generator.generate_product_title(new_description, "Amazon", "iphone 16 case")
+		new_title = text_generator.generate_product_title(new_description, "Amazon", "phone case")
 		
 		print(f"Generated Title: {new_title}")
 		print(f"Generated Description: {new_description}")
 		
 		# Generate bullet points for the product
 		print("\nGenerating bullet points...")
-		bullet_points = text_generator.generate_product_bullets(new_description, "Amazon", "iphone 16 case")
+		bullet_points = text_generator.generate_product_bullets(new_description, "Amazon", "phone case")
 		for i, bullet_point in enumerate(bullet_points, 1):
 			print(f"Bullet point {i}: {bullet_point}")
 		

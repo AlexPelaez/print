@@ -825,101 +825,89 @@ class ProductDAO:
 
     def delete_product(self, product_id: str) -> bool:
         """
-        Delete a product from the database by its internal ID.
-        This will cascade delete all related records from:
-        - product_status
-        - product_tags
-        - product_variants
-        - product_images
-        - product_print_areas (and product_placeholders)
-        - product_external
-        - product_sales_channel_properties
-        - product_views (and product_view_files)
-        
+        Delete a product from the database.
         Args:
-            product_id: The internal database ID of the product
-            
+            product_id: The ID of the product to delete.
         Returns:
-            bool: True if the product was successfully deleted, False otherwise
+            True if successful, False otherwise.
         """
         try:
-            # First get counts of related records for verification
-            tables_and_columns = {
-                "product_status": "product_fk",
-                "product_tags": "product_id",
-                "product_variants": "product_id",
-                "product_images": "product_id",
-                "product_print_areas": "product_id",
-                "product_external": "product_id",
-                "product_sales_channel_properties": "product_id",
-                "product_views": "product_id"
-            }
+            # First, get the internal ID
+            select_q = "SELECT id FROM products WHERE product_id = %s"
+            self.db.cursor.execute(select_q, (product_id,))
+            result = self.db.cursor.fetchone()
             
-            counts_before = {}
-            for table, column in tables_and_columns.items():
-                self.db.cursor.execute(f"SELECT COUNT(*) as count FROM {table} WHERE {column} = %s", (product_id,))
-                counts_before[table] = self.db.cursor.fetchone()['count']
+            if not result:
+                return False
+                
+            internal_id = result["id"]
             
-            # Also check placeholders and view files
-            self.db.cursor.execute("""
-                SELECT COUNT(*) as count 
-                FROM product_placeholders ph 
-                JOIN product_print_areas pa ON ph.print_area_id = pa.id 
-                WHERE pa.product_id = %s
-            """, (product_id,))
-            counts_before['product_placeholders'] = self.db.cursor.fetchone()['count']
+            # Delete all related data
+            self._delete_sub_models(internal_id)
             
-            self.db.cursor.execute("""
-                SELECT COUNT(*) as count 
-                FROM product_view_files vf 
-                JOIN product_views v ON vf.view_id = v.id 
-                WHERE v.product_id = %s
-            """, (product_id,))
-            counts_before['product_view_files'] = self.db.cursor.fetchone()['count']
-
-            # Delete the product (this will cascade to all related tables)
-            sql = "DELETE FROM products WHERE id = %s"
-            self.db.cursor.execute(sql, (product_id,))
+            # Delete status first (foreign key constraint)
+            status_q = "DELETE FROM product_status WHERE product_fk = %s"
+            self.db.cursor.execute(status_q, (internal_id,))
+            
+            # Delete main product
+            delete_q = "DELETE FROM products WHERE id = %s"
+            self.db.cursor.execute(delete_q, (internal_id,))
+            
             self.db.connection.commit()
-
-            # Verify that all related records were deleted
-            for table, column in tables_and_columns.items():
-                self.db.cursor.execute(f"SELECT COUNT(*) as count FROM {table} WHERE {column} = %s", (product_id,))
-                count_after = self.db.cursor.fetchone()['count']
-                if count_after > 0:
-                    print(f"Warning: {count_after} records remain in {table} after deletion")
-                elif counts_before[table] > 0:
-                    print(f"Successfully deleted {counts_before[table]} records from {table}")
-
-            # Also verify placeholders and view files
-            self.db.cursor.execute("""
-                SELECT COUNT(*) as count 
-                FROM product_placeholders ph 
-                JOIN product_print_areas pa ON ph.print_area_id = pa.id 
-                WHERE pa.product_id = %s
-            """, (product_id,))
-            count_after = self.db.cursor.fetchone()['count']
-            if count_after > 0:
-                print(f"Warning: {count_after} records remain in product_placeholders after deletion")
-            elif counts_before['product_placeholders'] > 0:
-                print(f"Successfully deleted {counts_before['product_placeholders']} records from product_placeholders")
-
-            self.db.cursor.execute("""
-                SELECT COUNT(*) as count 
-                FROM product_view_files vf 
-                JOIN product_views v ON vf.view_id = v.id 
-                WHERE v.product_id = %s
-            """, (product_id,))
-            count_after = self.db.cursor.fetchone()['count']
-            if count_after > 0:
-                print(f"Warning: {count_after} records remain in product_view_files after deletion")
-            elif counts_before['product_view_files'] > 0:
-                print(f"Successfully deleted {counts_before['product_view_files']} records from product_view_files")
-
             return True
-
+            
         except Exception as e:
-            print(f"Error deleting product {product_id}: {e}")
+            print(f"Error deleting product: {e}")
+            self.db.connection.rollback()
+            return False
+    
+    def update_product(self, product):
+        """
+        Update a product in the database.
+        This is a simplified update method that only updates the product's main properties.
+        For more complex updates, use insert_or_update_product.
+        
+        Args:
+            product: The product object with updated values.
+        """
+        try:
+            # If the product has an id attribute, use it (it's the external product_id)
+            if hasattr(product, 'id'):
+                product_id = product.id
+            # Otherwise, use the product_id attribute
+            elif hasattr(product, 'product_id'):
+                product_id = product.product_id
+            else:
+                raise ValueError("Product object must have either 'id' or 'product_id' attribute")
+            
+            # Get the internal ID
+            select_q = "SELECT id FROM products WHERE product_id = %s"
+            self.db.cursor.execute(select_q, (product_id,))
+            result = self.db.cursor.fetchone()
+            
+            if not result:
+                return False
+                
+            internal_id = result["id"]
+            
+            # Update the main product properties
+            update_q = """
+            UPDATE products 
+            SET title = %s, description = %s, updated_at = NOW()
+            WHERE id = %s
+            """
+            self.db.cursor.execute(update_q, (product.title, product.description, internal_id))
+            
+            # Update the status if it exists
+            if hasattr(product, 'status'):
+                self.set_status_by_id(internal_id, product.status)
+            
+            self.db.connection.commit()
+            return True
+            
+        except Exception as e:
+            print(f"Error updating product: {e}")
+            self.db.connection.rollback()
             return False
 
     def close(self):

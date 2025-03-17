@@ -3,104 +3,157 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PrintAI - AI-Powered Print-on-Demand</title>
+  <title>PrintAI - AI-Powered Print-on-Demand Platform</title>
   <style>
-    :root {
-      --midnight-blue: #0a1930;
-      --electric-purple: #8a2be2;
-      --neon-pink: #ff6ec7;
-      --neon-cyan: #00ffff;
-      --light-gray: #f5f5f5;
-      --white: #ffffff;
-      --dark-gray: #333333;
-    }
-    
+    /* Reset and Base Styles */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
-    
+
     body {
-      background-color: var(--midnight-blue);
-      color: var(--white);
+      background-color: #f8f9fc;
+      color: #1a1a2e;
+      line-height: 1.6;
       overflow-x: hidden;
     }
-    
-    /* Header & Navigation */
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: 20px 50px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
-      background: linear-gradient(180deg, rgba(10,25,48,1) 0%, rgba(10,25,48,0.8) 80%, rgba(10,25,48,0) 100%);
-    }
-    
-    .logo {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--white);
+
+    a {
       text-decoration: none;
+      color: inherit;
     }
-    
-    .logo span {
-      color: var(--neon-cyan);
-    }
-    
-    nav ul {
-      display: flex;
+
+    ul {
       list-style: none;
     }
-    
-    nav ul li {
-      margin: 0 15px;
+
+    /* Typography */
+    h1, h2, h3, h4 {
+      font-weight: 700;
+      line-height: 1.2;
     }
-    
-    nav ul li a {
-      color: var(--white);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s ease;
+
+    h1 {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
     }
-    
-    nav ul li a:hover {
-      color: var(--neon-cyan);
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
     }
-    
-    .cta-button {
-      background: linear-gradient(90deg, var(--electric-purple), var(--neon-pink));
-      color: var(--white);
-      border: none;
-      padding: 10px 25px;
-      border-radius: 30px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      text-decoration: none;
+
+    h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
     }
-    
-    .cta-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(138, 43, 226, 0.3);
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
     }
-    
-    /* Hero Section */
-    .hero {
-      min-height: 100vh;
+
+    section {
+      padding: 5rem 0;
+    }
+
+    .section-title {
+      position: relative;
+      margin-bottom: 3rem;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 5rem;
+      height: 4px;
+      background: linear-gradient(90deg, #4e54c8, #8f94fb);
+      border-radius: 2px;
+    }
+
+    /* Header */
+    header {
+      padding: 1.5rem 0;
+      position: absolute;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 100px;
-      position: relative;
-      overflow: hidden;
     }
-    
+
+    .logo img {
+      height: 40px;
+      margin-right: 0.5rem;
+    }
+
+    .logo h3 {
+      font-weight: 800;
+      font-size: 1.8rem;
+      margin: 0;
+      background: linear-gradient(90deg, #4e54c8, #8f94fb);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      font-weight: 500;
+      font-size: 1rem;
+      transition: color 0.3s ease;
+    }
+
+    .nav-link:hover {
+      color: #4e54c8;
+    }
+
+    .nav-cta {
+      background: linear-gradient(90deg, #4e54c8, #8f94fb);
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 30px;
+      font-weight: 600;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .nav-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(78, 84, 200, 0.2);
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 700px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: #0f0c29;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+
     .hero::before {
       content: '';
       position: absolute;
@@ -108,876 +161,773 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at top right, rgba(138, 43, 226, 0.2), transparent 60%),
-                  radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.1), transparent 40%);
-      z-index: -1;
+      background: url("/api/placeholder/1200/800") center/cover no-repeat;
+      opacity: 0.05;
     }
-    
+
     .hero-content {
-      max-width: 600px;
+      position: relative;
       z-index: 1;
+      color: white;
+      max-width: 700px;
     }
-    
-    .hero h1 {
-      font-size: 56px;
-      font-weight: 800;
-      margin-bottom: 20px;
-      line-height: 1.2;
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
     }
-    
-    .hero h1 span {
-      background: linear-gradient(90deg, var(--neon-cyan), var(--electric-purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    
-    .hero p {
-      font-size: 20px;
-      margin-bottom: 40px;
-      color: var(--light-gray);
-      line-height: 1.6;
-    }
-    
-    .cta-buttons {
-      display: flex;
-      gap: 20px;
-    }
-    
-    .secondary-button {
-      background: transparent;
-      color: var(--white);
-      border: 2px solid var(--neon-cyan);
-      padding: 10px 25px;
+
+    .hero-cta {
+      display: inline-block;
+      background: linear-gradient(90deg, #4e54c8, #8f94fb);
+      color: white;
+      padding: 1rem 2.5rem;
       border-radius: 30px;
+      font-size: 1.1rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-    }
-    
-    .secondary-button:hover {
-      background-color: rgba(0, 255, 255, 0.1);
-      transform: translateY(-2px);
-    }
-    
-    .hero-image {
-      position: relative;
-      width: 500px;
-      height: 500px;
-      z-index: 1;
-    }
-    
-    .ai-preview {
-      width: 100%;
-      height: 100%;
-      background-color: rgba(255, 255, 255, 0.05);
-      border-radius: 20px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
-    }
-    
-    .ai-preview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .ai-preview-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-    
-    .ai-prompt-input {
-      width: 100%;
-      padding: 12px 20px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 30px;
-      background-color: rgba(255, 255, 255, 0.1);
-      color: var(--white);
-      font-size: 16px;
-      transition: all 0.3s ease;
-    }
-    
-    .ai-prompt-input:focus {
-      outline: none;
-      background-color: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 0 2px var(--neon-cyan);
-    }
-    
-    .ai-preview-content {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-    }
-    
-    .preview-tshirt {
-      width: 300px;
-      height: 300px;
-      background-color: var(--white);
-      border-radius: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: var(--dark-gray);
-      font-weight: 600;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .preview-tshirt::before {
-      content: '';
-      position: absolute;
-      width: 200px;
-      height: 200px;
-      background: linear-gradient(45deg, var(--neon-pink), var(--electric-purple), var(--neon-cyan));
-      border-radius: 50%;
-      filter: blur(20px);
-      opacity: 0.7;
-      animation: rotate 10s linear infinite;
-    }
-    
-    @keyframes rotate {
-      0% {
-        transform: rotate(0deg) translate(-30px, 20px);
-      }
-      100% {
-        transform: rotate(360deg) translate(-30px, 20px);
-      }
-    }
-    
-    .preview-use-button {
-      background: linear-gradient(90deg, var(--neon-cyan), var(--electric-purple));
-      color: var(--white);
-      border: none;
-      padding: 12px 25px;
-      border-radius: 30px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 20px;
-      width: 100%;
-    }
-    
-    .preview-use-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
-    }
-    
-    /* Features Section */
-    .features {
-      padding: 120px 100px;
-      background-color: var(--midnight-blue);
-      position: relative;
-    }
-    
-    .section-title {
-      font-size: 42px;
-      font-weight: 800;
-      margin-bottom: 60px;
-      text-align: center;
-    }
-    
-    .section-title span {
-      background: linear-gradient(90deg, var(--neon-cyan), var(--electric-purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 30px;
-    }
-    
-    .feature-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-      border-radius: 20px;
-      padding: 30px;
-      position: relative;
-      overflow: hidden;
+      margin-right: 1rem;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      height: 280px;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
     }
-    
-    .feature-card::before {
-      content: '';
+
+    .hero-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(78, 84, 200, 0.3);
+    }
+
+    .hero-secondary {
+      display: inline-block;
+      background: transparent;
+      color: white;
+      padding: 1rem 2.5rem;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: 2px solid white;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .hero-secondary:hover {
+      background-color: white;
+      color: #4e54c8;
+    }
+
+    .hero-background {
       position: absolute;
       top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, var(--neon-cyan), var(--electric-purple));
+      right: 0;
+      width: 50%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.03);
+      clip-path: polygon(20% 0, 100% 0, 100% 100%, 0% 100%);
     }
-    
+
+    /* Features Section */
+    .features {
+      background-color: white;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background-color: #f8f9fc;
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
     .feature-card:hover {
       transform: translateY(-10px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
-    
+
     .feature-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 15px;
-      background: linear-gradient(135deg, var(--electric-purple), var(--neon-pink));
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+      border-radius: 50%;
       display: flex;
-      justify-content: center;
       align-items: center;
-      margin-bottom: 20px;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
     }
-    
+
     .feature-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 15px;
+      margin-bottom: 1rem;
+      color: #1a1a2e;
     }
-    
+
     .feature-description {
-      font-size: 16px;
-      color: var(--light-gray);
-      line-height: 1.6;
-      flex: 1;
+      color: #666;
+      font-size: 1rem;
     }
-    
+
     /* How It Works Section */
     .how-it-works {
-      padding: 120px 100px;
-      background: linear-gradient(180deg, var(--midnight-blue), rgba(10, 25, 48, 0.9));
-      position: relative;
+      background-color: #f8f9fc;
     }
-    
-    .steps-container {
+
+    .steps {
       display: flex;
       justify-content: space-between;
+      margin-top: 2rem;
       position: relative;
-      margin-top: 80px;
     }
-    
-    .steps-container::before {
+
+    .steps::before {
       content: '';
       position: absolute;
-      top: 50px;
-      left: 30px;
-      width: calc(100% - 60px);
-      height: 2px;
-      background: linear-gradient(90deg, var(--neon-cyan), var(--electric-purple));
+      top: 4rem;
+      left: 10%;
+      width: 80%;
+      height: 4px;
+      background: linear-gradient(90deg, #4e54c8, #8f94fb);
+      z-index: 0;
     }
-    
+
     .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: relative;
+      text-align: center;
       z-index: 1;
-      width: 22%;
+      width: 30%;
     }
-    
+
     .step-number {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--electric-purple), var(--neon-pink));
       display: flex;
-      justify-content: center;
       align-items: center;
-      font-size: 24px;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      color: white;
+      font-size: 1.5rem;
       font-weight: 700;
-      margin-bottom: 20px;
+      box-shadow: 0 10px 20px rgba(78, 84, 200, 0.2);
     }
-    
+
     .step-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 15px;
-      text-align: center;
+      margin-bottom: 1rem;
+      color: #1a1a2e;
     }
-    
+
     .step-description {
-      font-size: 16px;
-      color: var(--light-gray);
-      line-height: 1.6;
-      text-align: center;
+      color: #666;
     }
-    
+
     /* Showcase Section */
     .showcase {
-      padding: 120px 100px;
-      background-color: var(--midnight-blue);
-      position: relative;
+      background-color: white;
     }
-    
+
     .showcase-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 30px;
-      margin-bottom: 80px;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4rem;
     }
-    
+
     .showcase-item {
-      border-radius: 20px;
+      border-radius: 8px;
       overflow: hidden;
-      position: relative;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s ease;
-      height: 350px;
-      cursor: pointer;
     }
-    
-    .showcase-item img {
+
+    .showcase-item:hover {
+      transform: translateY(-5px);
+    }
+
+    .showcase-image {
       width: 100%;
-      height: 100%;
+      height: 250px;
       object-fit: cover;
-      transition: transform 0.5s ease;
     }
-    
-    .showcase-item:hover img {
-      transform: scale(1.05);
+
+    .showcase-info {
+      padding: 1.5rem;
+      background-color: white;
     }
-    
-    .showcase-item-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      padding: 20px;
-      background: linear-gradient(0deg, rgba(10, 25, 48, 0.9), transparent);
-      transform: translateY(100%);
-      transition: transform 0.3s ease;
+
+    .showcase-title {
+      margin-bottom: 0.5rem;
     }
-    
-    .showcase-item:hover .showcase-item-overlay {
-      transform: translateY(0);
+
+    .showcase-description {
+      color: #666;
+      font-size: 0.9rem;
     }
-    
-    .showcase-item-title {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    
-    .showcase-item-button {
-      background: linear-gradient(90deg, var(--neon-cyan), var(--electric-purple));
-      color: var(--white);
-      border: none;
-      padding: 8px 20px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
+
+    /* Testimonials */
     .testimonials {
-      margin-top: 80px;
+      margin-top: 4rem;
     }
-    
-    .testimonial-carousel {
-      display: flex;
-      overflow-x: hidden;
-      gap: 30px;
-      padding: 20px 0;
+
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
     }
-    
+
     .testimonial-card {
-      min-width: 350px;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-      border-radius: 20px;
-      padding: 30px;
-      transition: transform 0.3s ease;
+      background-color: #f8f9fc;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     }
-    
-    .testimonial-card:hover {
-      transform: translateY(-10px);
+
+    .testimonial-content {
+      font-style: italic;
+      color: #333;
+      margin-bottom: 1.5rem;
     }
-    
-    .testimonial-stars {
-      color: gold;
-      font-size: 20px;
-      margin-bottom: 15px;
-    }
-    
-    .testimonial-text {
-      font-size: 16px;
-      color: var(--light-gray);
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    
+
     .testimonial-author {
       display: flex;
       align-items: center;
     }
-    
-    .testimonial-avatar {
+
+    .author-avatar {
       width: 50px;
       height: 50px;
       border-radius: 50%;
-      background-color: var(--electric-purple);
-      margin-right: 15px;
+      margin-right: 1rem;
+      object-fit: cover;
     }
-    
-    .testimonial-info h4 {
-      font-size: 18px;
+
+    .author-info h4 {
+      margin: 0;
       font-weight: 600;
-      margin-bottom: 5px;
     }
-    
-    .testimonial-info p {
-      font-size: 14px;
-      color: var(--light-gray);
+
+    .author-info p {
+      color: #666;
+      font-size: 0.9rem;
+      margin: 0;
     }
-    
+
     /* Pricing Section */
     .pricing {
-      padding: 120px 100px;
-      background: linear-gradient(180deg, var(--midnight-blue), rgba(10, 25, 48, 0.9));
-      position: relative;
+      background-color: #f8f9fc;
     }
-    
-    .pricing-cards {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-top: 60px;
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
     }
-    
+
     .pricing-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-      border-radius: 20px;
-      padding: 40px;
-      width: 320px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      position: relative;
-    }
-    
-    .pricing-card.popular {
-      transform: scale(1.05);
-      border: 2px solid transparent;
-      background-clip: padding-box;
-      position: relative;
-    }
-    
-    .pricing-card.popular::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      background: linear-gradient(45deg, var(--neon-cyan), var(--electric-purple), var(--neon-pink));
-      z-index: -1;
-      border-radius: 22px;
-    }
-    
-    .pricing-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-    }
-    
-    .pricing-card.popular:hover {
-      transform: scale(1.05) translateY(-10px);
-    }
-    
-    .popular-tag {
-      position: absolute;
-      top: -15px;
-      right: 20px;
-      background: linear-gradient(90deg, var(--neon-cyan), var(--electric-purple));
-      padding: 5px 15px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    
-    .pricing-title {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 15px;
-    }
-    
-    .pricing-price {
-      font-size: 48px;
-      font-weight: 800;
-      margin-bottom: 20px;
-    }
-    
-    .pricing-price span {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--light-gray);
-    }
-    
-    .pricing-description {
-      font-size: 16px;
-      color: var(--light-gray);
-      margin-bottom: 30px;
-    }
-    
-    .pricing-features {
-      list-style: none;
-      margin-bottom: 30px;
-    }
-    
-    .pricing-features li {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .pricing-features li::before {
-      content: '✓';
-      color: var(--neon-cyan);
-      margin-right: 10px;
-      font-weight: 700;
-    }
-    
-    .pricing-button {
-      width: 100%;
-    }
-    
-    /* Final CTA Section */
-    .final-cta {
-      padding: 120px 100px;
+      background-color: white;
+      border-radius: 16px;
+      padding: 3rem 2rem;
       text-align: center;
-      background-color: var(--midnight-blue);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       position: relative;
       overflow: hidden;
     }
-    
-    .final-cta::before {
-      content: '';
+
+    .pricing-card.featured {
+      transform: scale(1.05);
+      box-shadow: 0 15px 30px rgba(78, 84, 200, 0.2);
+      border: 2px solid transparent;
+      background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #4e54c8, #8f94fb) border-box;
+    }
+
+    .pricing-card.featured::before {
+      content: 'Most Popular';
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at center, rgba(138, 43, 226, 0.2), transparent 70%);
-      z-index: 0;
+      top: 1.5rem;
+      right: -3rem;
+      background: linear-gradient(135deg, #4e54c8, #8f94fb);
+      color: white;
+      padding: 0.5rem 4rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      transform: rotate(45deg);
     }
-    
-    .final-cta-content {
-      position: relative;
-      z-index: 1;
+
+    .pricing-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     }
-    
-    .final-cta h2 {
-      font-size: 48px;
-      font-weight: 800;
-      margin-bottom: 30px;
+
+    .pricing-card.featured:hover {
+      transform: scale(1.05) translateY(-10px);
     }
-    
-    .final-cta p {
-      font-size: 20px;
-      color: var(--light-gray);
-      max-width: 700px;
-      margin: 0 auto 40px;
-      line-height: 1.6;
+
+    .pricing-title {
+      color: #1a1a2e;
+      margin-bottom: 0.5rem;
     }
-    
-    .final-cta-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
+
+    .pricing-price {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 1.5rem;
     }
-    
+
+    .pricing-price span {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #666;
+    }
+
+    .pricing-features {
+      margin-bottom: 2rem;
+    }
+
+    .pricing-feature {
+      padding: 0.5rem 0;
+      color: #666;
+    }
+
+    .pricing-cta {
+      display: inline-block;
+      background: linear-gradient(90deg, #4e54c8, #8f94fb);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .pricing-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(78, 84, 200, 0.2);
+    }
+
     /* Footer */
     footer {
-      padding: 80px 100px 40px;
-      background-color: rgba(7, 18, 34, 0.8);
-      position: relative;
+      background-color: #1a1a2e;
+      color: white;
+      padding: 4rem 0 2rem;
     }
-    
-    footer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cGF0aCBkPSJNMCAwIEw2MCAwIEw2MCA2MCBMMCAwWiIgZmlsbD0iIzhhMmJlMiIgZmlsbC1vcGFjaXR5PSIwLjAzIi8+PC9zdmc+');
-      z-index: 0;
-      opacity: 0.3;
-    }
-    
+
     .footer-content {
-      position: relative;
-      z-index: 1;
       display: grid;
       grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 40px;
+      gap: 2rem;
     }
-    
+
     .footer-logo {
-      font-size: 28px;
+      margin-bottom: 1rem;
+    }
+
+    .footer-logo img {
+      height: 40px;
+      margin-right: 0.5rem;
+    }
+
+    .footer-logo h3 {
       font-weight: 800;
-      margin-bottom: 20px;
-      display: block;
+      font-size: 1.8rem;
+      margin: 0;
     }
-    
-    .footer-logo span {
-      color: var(--neon-cyan);
+
+    .footer-tagline {
+      margin-bottom: 1.5rem;
+      opacity: 0.8;
     }
-    
-    .footer-description {
-      font-size: 16px;
-      color: var(--light-gray);
-      margin-bottom: 30px;
-      line-height: 1.6;
-    }
-    
+
     .footer-social {
       display: flex;
-      gap: 15px;
+      gap: 1rem;
     }
-    
-    .footer-social a {
+
+    .social-icon {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+      background-color: rgba(255, 255, 255, 0.1);
       display: flex;
+      align-items: center;
       justify-content: center;
-      align-items: center;
-      color: var(--white);
-      font-size: 20px;
-      transition: all 0.3s ease;
-      text-decoration: none;
+      transition: background-color 0.3s ease;
     }
-    
-    .footer-social a:hover {
-      transform: translateY(-5px);
-      background: linear-gradient(135deg, var(--electric-purple), var(--neon-pink));
+
+    .social-icon:hover {
+      background-color: rgba(255, 255, 255, 0.2);
     }
-    
-    .footer-links h3 {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-    }
-    
-    .footer-links ul {
-      list-style: none;
-    }
-    
-    .footer-links ul li {
-      margin-bottom: 10px;
-    }
-    
-    .footer-links ul li a {
-      color: var(--light-gray);
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-    
-    .footer-links ul li a:hover {
-      color: var(--neon-cyan);
-    }
-    
-    .footer-bottom {
-      margin-top: 60px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+
+    .footer-heading {
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
       position: relative;
-      z-index: 1;
     }
-    
-    .footer-copyright {
-      font-size: 14px;
-      color: var(--light-gray);
+
+    .footer-heading::after {
+      content: '';
+      position: absolute;
+      bottom: -0.5rem;
+      left: 0;
+      width: 2rem;
+      height: 3px;
+      background: linear-gradient(90deg, #4e54c8, #8f94fb);
+      border-radius: 2px;
     }
-    
-    .footer-legal {
-      display: flex;
-      gap: 20px;
+
+    .footer-links li {
+      margin-bottom: 0.7rem;
     }
-    
-    .footer-legal a {
-      font-size: 14px;
-      color: var(--light-gray);
-      text-decoration: none;
-      transition: color 0.3s ease;
+
+    .footer-links a {
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
     }
-    
-    .footer-legal a:hover {
-      color: var(--neon-cyan);
+
+    .footer-links a:hover {
+      opacity: 1;
     }
-    
-    /* Animations */
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.4);
+
+    .footer-bottom {
+      margin-top: 3rem;
+      text-align: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      h1 {
+        font-size: 2.8rem;
       }
-      70% {
-        box-shadow: 0 0 0 15px rgba(0, 255, 255, 0);
+
+      h2 {
+        font-size: 2rem;
       }
-      100% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 255, 0);
-      }
-    }
-    
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-    
-    /* Responsive Styles */
-    @media (max-width: 1200px) {
-      .hero {
+
+      .steps {
         flex-direction: column;
-        padding: 150px 50px 50px;
         align-items: center;
-        text-align: center;
       }
-      
-      .hero-content {
-        margin-bottom: 50px;
-      }
-      
-      .cta-buttons {
-        justify-content: center;
-      }
-      
-      .features-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .steps-container {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 40px;
-      }
-      
-      .steps-container::before {
+
+      .steps::before {
         display: none;
       }
-      
+
       .step {
-        width: 45%;
+        width: 100%;
+        max-width: 400px;
+        margin-bottom: 3rem;
       }
-      
-      .showcase-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .pricing-cards {
-        flex-wrap: wrap;
-      }
-      
+
       .footer-content {
         grid-template-columns: 1fr 1fr;
       }
     }
-    
+
     @media (max-width: 768px) {
-      header {
-        padding: 20px 30px;
+      h1 {
+        font-size: 2.3rem;
       }
-      
-      nav ul {
-        display: none;
-      }
-      
+
       .hero {
-        padding: 130px 30px 50px;
-      }
-      
-      .hero-image {
-        width: 100%;
+        text-align: center;
+        padding: 6rem 0;
         height: auto;
       }
-      
-      .features,
-      .how-it-works,
-      .showcase,
-      .pricing,
-      .final-cta {
-        padding: 80px 30px;
+
+      .hero-content {
+        margin: 0 auto;
       }
-      
-      .features-grid,
-      .showcase-grid {
-        grid-template-columns: 1fr;
+
+      .hero-background {
+        display: none;
       }
-      
-      .step {
-        width: 100%;
-        margin-bottom: 40px;
+
+      .navbar {
+        flex-direction: column;
       }
-      
+
+      .nav-links {
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
       .footer-content {
         grid-template-columns: 1fr;
+        text-align: center;
       }
-      
-      .footer-bottom {
-        flex-direction: column;
-        gap: 20px;
+
+      .footer-heading::after {
+        left: 50%;
+        transform: translateX(-50%);
       }
+
+      .footer-social {
+        justify-content: center;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-content, .feature-card, .step, .showcase-item, .testimonial-card, .pricing-card {
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .feature-card:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .feature-card:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    .feature-card:nth-child(4) {
+      animation-delay: 0.6s;
+    }
+
+    .step:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .step:nth-child(3) {
+      animation-delay: 0.4s;
     }
   </style>
 </head>
 <body>
   <!-- Header -->
   <header>
-    <a href="#" class="logo">Print<span>AI</span></a>
-    <nav>
-      <ul>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#how-it-works">How It Works</a></li>
-        <li><a href="#showcase">Showcase</a></li>
-        <li><a href="#pricing">Pricing</a></li>
-      </ul>
-    </nav>
-    <a href="#" class="cta-button">Sign Up</a>
+    <div class="container">
+      <nav class="navbar">
+        <div class="logo">
+          <span class="logo-icon">🎨</span>
+          <h3>PrintAI</h3>
+        </div>
+        <ul class="nav-links">
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="#showcase" class="nav-link">Showcase</a></li>
+          <li><a href="#pricing" class="nav-link">Pricing</a></li>
+          <li><a href="#" class="nav-cta">Log In</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
   <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>AI-Powered Print-on-Demand, <span>Designed for You.</span></h1>
-      <p>Create, Sell, and Scale Your Print Business with the Power of AI. Generate unique designs in seconds and automate your entire workflow.</p>
-      <div class="cta-buttons">
-        <a href="#" class="cta-button pulse">Try AI Design Now</a>
-        <a href="#how-it-works" class="secondary-button">See How It Works</a>
+  <section class="hero" id="home">
+    <div class="container">
+      <div class="hero-content">
+        <h1>Revolutionize Your Print-on-Demand Business with AI</h1>
+        <p class="hero-subtitle">Create stunning designs instantly, automate your workflow, and scale your POD business 10x faster with our AI-powered platform.</p>
+        <a href="#" class="hero-cta">Start for Free</a>
+        <a href="#" class="hero-secondary">Watch Demo</a>
       </div>
     </div>
-    <div class="hero-image">
-      <div class="ai-preview">
-        <div class="ai-preview-header">
-          <div class="ai-preview-title">Live AI Design Generator</div>
-        </div>
-        <input type="text" class="ai-prompt-input" placeholder="Enter a design idea (e.g., 'Cyberpunk Hoodie')">
-        <div class="ai-preview-content">
-          <div class="preview-tshirt">
-            Type something to generate a design
-          </div>
-        </div>
-        <button class="preview-use-button">Use This Design</button>
-      </div>
-    </div>
+    <div class="hero-background"></div>
   </section>
 
   <!-- Features Section -->
   <section class="features" id="features">
-    <h2 class="section-title">Powered by <span>AI Technology</span></h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🎨</div>
-        <h3 class="feature-title">AI-Powered Design Generator</h3>
-        <p class="feature-description">Instantly create & customize unique print designs using text prompts. Our AI understands your vision and brings it to life.</p>
+    <div class="container">
+      <h2 class="section-title">Intelligent Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">✨</div>
+          <h3 class="feature-title">AI-Powered Design</h3>
+          <p class="feature-description">Create stunning, market-ready designs in seconds with our state-of-the-art AI. Just type your idea and watch it transform into sellable art.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3 class="feature-title">Automated Mockups</h3>
+          <p class="feature-description">Instantly generate professional product mockups across multiple product types. See your designs come to life on t-shirts, mugs, posters, and more.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <h3 class="feature-title">Smart Store Integration</h3>
+          <p class="feature-description">Seamlessly connect to all major POD platforms and marketplaces. One-click publishing to Etsy, Shopify, Amazon, and more.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-title">Real-Time Analytics</h3>
+          <p class="feature-description">Track performance across all platforms with unified analytics. Identify top-selling designs and optimize your strategy with AI recommendations.</p>
+        </div>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">👕</div>
-        <h3 class="feature-title">Auto Mockups & Previews</h3>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3 class="step-title">Upload Your Idea</h3>
+          <p class="step-description">Share your concept through text, sketch, or reference images. Our AI understands your vision and artistic preferences.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3 class="step-title">AI Generates Designs</h3>
+          <p class="step-description">Our advanced AI creates multiple design variations based on your input, optimized for print-on-demand products.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3 class="step-title">Sell with Ease</h3>
+          <p class="step-description">Choose your favorite designs, customize as needed, and publish directly to your connected stores with one click.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Showcase Section -->
+  <section class="showcase" id="showcase">
+    <div class="container">
+      <h2 class="section-title">Design Showcase</h2>
+      <div class="showcase-grid">
+        <div class="showcase-item">
+          <img src="/api/placeholder/400/320" alt="T-shirt design" class="showcase-image">
+          <div class="showcase-info">
+            <h3 class="showcase-title">Nature-Inspired T-Shirt</h3>
+            <p class="showcase-description">AI-generated mountain landscape design with modern typography.</p>
+          </div>
+        </div>
+        <div class="showcase-item">
+          <img src="/api/placeholder/400/320" alt="Poster design" class="showcase-image">
+          <div class="showcase-info">
+            <h3 class="showcase-title">Minimalist Art Poster</h3>
+            <p class="showcase-description">Abstract geometric patterns created from a single text prompt.</p>
+          </div>
+        </div>
+        <div class="showcase-item">
+          <img src="/api/placeholder/400/320" alt="Mug design" class="showcase-image">
+          <div class="showcase-info">
+            <h3 class="showcase-title">Custom Character Mug</h3>
+            <p class="showcase-description">Personalized cartoon character designed by AI from a simple description.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Testimonials -->
+      <div class="testimonials">
+        <h2 class="section-title">What Our Users Say</h2>
+        <div class="testimonial-grid">
+          <div class="testimonial-card">
+            <p class="testimonial-content">"PrintAI has completely transformed my POD business. I've increased my design output by 10x and my sales have doubled in just two months!"</p>
+            <div class="testimonial-author">
+              <img src="/api/placeholder/100/100" alt="Sarah Johnson" class="author-avatar">
+              <div class="author-info">
+                <h4>Sarah Johnson</h4>
+                <p>Etsy Store Owner</p>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card">
+            <p class="testimonial-content">"The AI designs are incredible - they look like they were made by professional graphic designers. My customers love the unique artwork I can now offer."</p>
+            <div class="testimonial-author">
+              <img src="/api/placeholder/100/100" alt="Michael Chen" class="author-avatar">
+              <div class="author-info">
+                <h4>Michael Chen</h4>
+                <p>Shopify Merchant</p>
+              </div>
+            </div>
+          </div>
+          <div class="testimonial-card">
+            <p class="testimonial-content">"As someone with zero design skills, PrintAI has been a game-changer. I can now turn my ideas into sellable products in minutes instead of hiring expensive freelancers."</p>
+            <div class="testimonial-author">
+              <img src="/api/placeholder/100/100" alt="Emma Rodriguez" class="author-avatar">
+              <div class="author-info">
+                <h4>Emma Rodriguez</h4>
+                <p>Amazon Merch Seller</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <h2 class="section-title">Simple Pricing</h2>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3 class="pricing-title">Starter</h3>
+          <div class="pricing-price">$0 <span>/month</span></div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">10 AI designs per month</li>
+            <li class="pricing-feature">Basic mockup generator</li>
+            <li class="pricing-feature">Single store integration</li>
+            <li class="pricing-feature">Community support</li>
+          </ul>
+          <a href="#" class="pricing-cta">Start for Free</a>
+        </div>
+        <div class="pricing-card featured">
+          <h3 class="pricing-title">Professional</h3>
+          <div class="pricing-price">$29 <span>/month</span></div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">100 AI designs per month</li>
+            <li class="pricing-feature">Advanced mockup generator</li>
+            <li class="pricing-feature">Multi-store integration</li>
+            <li class="pricing-feature">Basic analytics</li>
+            <li class="pricing-feature">Priority support</li>
+          </ul>
+          <a href="#" class="pricing-cta">Start 7-Day Trial</a>
+        </div>
+        <div class="pricing-card">
+          <h3 class="pricing-title">Enterprise</h3>
+          <div class="pricing-price">$79 <span>/month</span></div>
+          <ul class="pricing-features">
+            <li class="pricing-feature">Unlimited AI designs</li>
+            <li class="pricing-feature">Premium mockup generator</li>
+            <li class="pricing-feature">All platform integrations</li>
+            <li class="pricing-feature">Advanced analytics & reports</li>
+            <li class="pricing-feature">Dedicated account manager</li>
+            <li class="pricing-feature">API access</li>
+          </ul>
+          <a href="#" class="pricing-cta">Start 7-Day Trial</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-about">
+          <div class="footer-logo">
+            <span class="logo-icon">🎨</span>
+            <h3>PrintAI</h3>
+          </div>
+          <p class="footer-tagline">Empowering Creators with AI</p>
+          <div class="footer-social">
+            <a href="#" class="social-icon">FB</a>
+            <a href="#" class="social-icon">TW</a>
+            <a href="#" class="social-icon">IG</a>
+            <a href="#" class="social-icon">YT</a>
+          </div>
+        </div>
+        <div class="footer-links-section">
+          <h4 class="footer-heading">Company</h4>
+          <ul class="footer-links">
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Blog</a></li>
