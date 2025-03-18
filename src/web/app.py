@@ -1,10 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, g, current_app
+from flask import Flask, render_template, request, redirect, url_for, g, current_app, session
 import os
 import sys
 from pathlib import Path
 from datetime import datetime
 import math
 from jinja2 import ChoiceLoader, FileSystemLoader
+from dotenv import find_dotenv, load_dotenv
+import json
+
+# Load environment variables
+ENV_FILE = find_dotenv()
+if ENV_FILE:
+    load_dotenv(ENV_FILE)
 
 # Add the parent directory to the path so we can import our modules
 sys.path.append(str(Path(__file__).parent.parent))
@@ -16,27 +23,14 @@ from controllers import all_blueprints
 
 # Create Flask app with standard template folder
 app = Flask(__name__, template_folder='templates')
-app.secret_key = os.urandom(24)
-
-# Set up custom template loader for multiple directories
-base_path = os.path.dirname(os.path.abspath(__file__))
-template_path = os.path.join(base_path, 'templates')
-products_path = os.path.join(base_path, 'products')
-components_path = os.path.join(base_path, 'components')
-dashboard_path = os.path.join(base_path, 'dashboard')
-logged_out_path = os.path.join(base_path, 'logged_out')
-
-# Create a choice loader with multiple template directories
-app.jinja_loader = ChoiceLoader([
-    FileSystemLoader(template_path),
-    FileSystemLoader(products_path),
-    FileSystemLoader(components_path),
-    FileSystemLoader(dashboard_path),
-    FileSystemLoader(logged_out_path)
-])
+# Use any available secret key from environment or generate random key
+app.secret_key = os.environ.get("AUTH0_CLIENT_SECRET", os.urandom(24))
 
 # Add hasattr function to Jinja2 environment
 app.jinja_env.globals['hasattr'] = hasattr
+
+# Add tojson filter for pretty-printing JSON
+app.jinja_env.filters['tojson'] = lambda obj, indent=None: json.dumps(obj, indent=indent)
 
 # Add current_app to template context
 @app.context_processor
@@ -70,7 +64,7 @@ def index():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('index.html', stats=stats, now=now)
+        return render_template('logged_out/index.html', stats=stats, now=now)
     
     finally:
         # Close the database connection
@@ -114,3 +108,5 @@ def teardown_request(exception):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5002) 
+
+    

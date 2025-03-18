@@ -8,7 +8,7 @@ from services.printify_service import PrintifyService
 from models.printify_template_models import PrintifyTagModel
 
 # Create template blueprint
-template_bp = Blueprint('template', __name__, template_folder='../dashboard/templates')
+template_bp = Blueprint('template', __name__)
 
 # Cache for mockup images
 mockup_cache = {}
@@ -118,7 +118,7 @@ def dashboard():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('template_dashboard.html', stats=stats, recent_templates=templates_for_display, now=now)
+        return render_template('dashboard/templates/template_dashboard.html', stats=stats, recent_templates=templates_for_display, now=now)
     
     finally:
         # Close the database connection
@@ -195,12 +195,12 @@ def templates():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('templates.html', 
-                              templates=templates_for_display, 
-                              page=page, 
-                              total_pages=total_pages, 
-                              search=search,
-                              now=now)
+        return render_template('dashboard/templates/templates.html',
+                               templates=templates_for_display,
+                               total_templates=total_templates,
+                               page=page, 
+                               total_pages=total_pages,
+                               now=now)
     
     finally:
         # Close the database connection
@@ -246,10 +246,10 @@ def template_detail(template_id):
                 "print_areas": [pa.data.get("position") for pa in template.print_areas] if template.print_areas else []
             }
             
-            # Include current year for copyright in footer
+            # Get current time for footer
             now = datetime.now()
             
-            return render_template('template_detail.html', template=template_data, mockup_images=mockup_images, now=now)
+            return render_template('dashboard/templates/template_detail.html', template=template_data, mockup_images=mockup_images, now=now)
         
         except ValueError as e:
             flash(f"Error: {str(e)}", "error")
@@ -398,7 +398,7 @@ def edit_template(template_id):
             # Include current year for copyright in footer
             now = datetime.now()
             
-            return render_template('edit_template.html', template=template_data, now=now)
+            return render_template('dashboard/templates/edit_template.html', template=template_data, now=now)
             
         except ValueError as e:
             flash(f"Error: {str(e)}", "error")

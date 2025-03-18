@@ -9,7 +9,7 @@ from dao.template_dao import TemplateDAO
 from services.printify_service import PrintifyService
 
 # Create product blueprint
-product_bp = Blueprint('product', __name__, template_folder='../dashboard/products')
+product_bp = Blueprint('product', __name__)
 
 # Cache for mockup images
 mockup_cache = {}
@@ -43,7 +43,7 @@ def index():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('./logged_out/index.html', stats=stats, now=now)
+        return render_template('logged_out/index.html', stats=stats, now=now)
     
     finally:
         # Close the database connection
@@ -147,7 +147,7 @@ def dashboard():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('product_dashboard.html', stats=stats, recent_products=products_for_display, now=now)
+        return render_template('dashboard/products/product_dashboard.html', stats=stats, recent_products=products_for_display, now=now)
     
     finally:
         # Close the database connection
@@ -230,14 +230,12 @@ def products():
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('products.html', 
-                              products=products_for_display, 
-                              page=page, 
-                              total_pages=total_pages, 
-                              search=search,
-                              status=status,
-                              sort_by=sort_by,
-                              now=now)
+        return render_template('dashboard/products/products.html',
+                               products=products_for_display,
+                               total_products=total_products,
+                               page=page, 
+                               total_pages=total_pages,
+                               now=now)
     
     finally:
         # Close the database connection
@@ -274,11 +272,11 @@ def product_detail(product_id):
         except Exception as e:
             print(f"Error fetching mockups for product {product_id}: {str(e)}")
         
-        # Include current year for copyright in footer
+        # Get current time for footer
         now = datetime.now()
         
-        return render_template('product_detail.html', 
-                              product=product, 
+        return render_template('dashboard/products/product_detail.html',
+                              product=product,
                               mockup_urls=mockup_urls,
                               now=now)
     
@@ -307,7 +305,7 @@ def edit_product(product_id):
         # Include current year for copyright in footer
         now = datetime.now()
         
-        return render_template('edit_product.html', 
+        return render_template('dashboard/products/edit_product.html',
                               product=product,
                               now=now)
     

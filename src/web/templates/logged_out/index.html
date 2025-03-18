@@ -737,7 +737,11 @@
           <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
           <li><a href="#showcase" class="nav-link">Showcase</a></li>
           <li><a href="#pricing" class="nav-link">Pricing</a></li>
-          <li><a href="#" class="nav-cta">Log In</a></li>
+          {% if session.user %}
+          <li><a href="{{ url_for('auth.dashboard') }}" class="nav-cta">Dashboard</a></li>
+          {% else %}
+          <li><a href="{{ url_for('auth.auth_home') }}" class="nav-cta">Log In</a></li>
+          {% endif %}
         </ul>
       </nav>
     </div>
@@ -749,7 +753,11 @@
       <div class="hero-content">
         <h1>Revolutionize Your Print-on-Demand Business with AI</h1>
         <p class="hero-subtitle">Create stunning designs instantly, automate your workflow, and scale your POD business 10x faster with our AI-powered platform.</p>
-        <a href="#" class="hero-cta">Start for Free</a>
+        {% if session.user %}
+        <a href="{{ url_for('auth.dashboard') }}" class="hero-cta">Go to Dashboard</a>
+        {% else %}
+        <a href="{{ url_for('auth.auth_home') }}" class="hero-cta">Start for Free</a>
+        {% endif %}
         <a href="#" class="hero-secondary">Watch Demo</a>
       </div>
     </div>
@@ -890,7 +898,11 @@
             <li class="pricing-feature">Single store integration</li>
             <li class="pricing-feature">Community support</li>
           </ul>
-          <a href="#" class="pricing-cta">Start for Free</a>
+          {% if session.user %}
+          <a href="{{ url_for('auth.dashboard') }}" class="pricing-cta">Go to Dashboard</a>
+          {% else %}
+          <a href="{{ url_for('auth.auth_home') }}" class="pricing-cta">Start for Free</a>
+          {% endif %}
         </div>
         <div class="pricing-card featured">
           <h3 class="pricing-title">Professional</h3>
@@ -902,7 +914,11 @@
             <li class="pricing-feature">Basic analytics</li>
             <li class="pricing-feature">Priority support</li>
           </ul>
-          <a href="#" class="pricing-cta">Start 7-Day Trial</a>
+          {% if session.user %}
+          <a href="{{ url_for('auth.dashboard') }}" class="pricing-cta">Go to Dashboard</a>
+          {% else %}
+          <a href="{{ url_for('auth.auth_home') }}" class="pricing-cta">Start 7-Day Trial</a>
+          {% endif %}
         </div>
         <div class="pricing-card">
           <h3 class="pricing-title">Enterprise</h3>
@@ -915,7 +931,11 @@
             <li class="pricing-feature">Dedicated account manager</li>
             <li class="pricing-feature">API access</li>
           </ul>
-          <a href="#" class="pricing-cta">Start 7-Day Trial</a>
+          {% if session.user %}
+          <a href="{{ url_for('auth.dashboard') }}" class="pricing-cta">Go to Dashboard</a>
+          {% else %}
+          <a href="{{ url_for('auth.auth_home') }}" class="pricing-cta">Start 7-Day Trial</a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -944,3 +964,10 @@
             <li><a href="#">About Us</a></li>
             <li><a href="#">Careers</a></li>
             <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
