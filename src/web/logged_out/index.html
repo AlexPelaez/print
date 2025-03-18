@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PrintAI - AI-Powered Print-on-Demand Platform</title>
+  <title>PODAI - AI-Powered Print-on-Demand Platform</title>
   <style>
     /* Reset and Base Styles */
     * {
@@ -229,8 +229,21 @@
 
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 2rem;
+    }
+
+    /* Media queries for features grid */
+    @media (max-width: 1200px) {
+      .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .feature-card {
@@ -717,7 +730,7 @@
       <nav class="navbar">
         <div class="logo">
           <span class="logo-icon">🎨</span>
-          <h3>PrintAI</h3>
+          <h3>PODAI</h3>
         </div>
         <ul class="nav-links">
           <li><a href="#features" class="nav-link">Features</a></li>
@@ -790,7 +803,7 @@
         <div class="step">
           <div class="step-number">3</div>
           <h3 class="step-title">Sell with Ease</h3>
-          <p class="step-description">Choose your favorite designs, customize as needed, and publish directly to your connected stores with one click.</p>
+          <p class="step-description">Choose your favorite designs, customize as needed, and schedule to publish directly to your connected stores with one click.</p>
         </div>
       </div>
     </div>
@@ -869,10 +882,10 @@
       <h2 class="section-title">Simple Pricing</h2>
       <div class="pricing-grid">
         <div class="pricing-card">
-          <h3 class="pricing-title">Starter</h3>
+          <h3 class="pricing-title">Free</h3>
           <div class="pricing-price">$0 <span>/month</span></div>
           <ul class="pricing-features">
-            <li class="pricing-feature">10 AI designs per month</li>
+            <li class="pricing-feature">3 AI designs per month</li>
             <li class="pricing-feature">Basic mockup generator</li>
             <li class="pricing-feature">Single store integration</li>
             <li class="pricing-feature">Community support</li>
@@ -915,7 +928,7 @@
         <div class="footer-about">
           <div class="footer-logo">
             <span class="logo-icon">🎨</span>
-            <h3>PrintAI</h3>
+            <h3>PODAI</h3>
           </div>
           <p class="footer-tagline">Empowering Creators with AI</p>
           <div class="footer-social">
