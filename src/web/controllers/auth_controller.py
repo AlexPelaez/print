@@ -46,6 +46,13 @@ def dashboard():
     """Display dashboard page with user info if logged in"""
     return render_template('logged_in/dashboard.html')
 
+@auth_bp.route("/profile")
+def profile():
+    """Display user profile page with user info"""
+    if not is_authenticated():
+        return redirect(url_for("auth.auth_home"))
+    return render_template('logged_in/profile.html')
+
 @auth_bp.route("/login")
 def login():
     """Route for login - redirects to Auth0"""
@@ -58,7 +65,7 @@ def callback():
     """Auth0 callback handler"""
     token = oauth.auth0.authorize_access_token()
     session["user"] = token
-    return redirect(url_for("auth.auth_home"))
+    return redirect(url_for("auth.profile"))
 
 @auth_bp.route("/logout")
 def logout():
